@@ -30,6 +30,17 @@ Assuming you have `virtualenv` and `python3-pip` installed:
 
 - `virtualenv venv && source venv/bin/activate`
 - `pip3 install -r requirements.txt`
+- Get into python3 interactive mode and run:
+```
+Python 3.5.2 (default, Nov 12 2018, 13:43:14)
+[GCC 5.4.0 20160609] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import nltk
+>>> nltk.download('punkt')
+[nltk_data] Downloading package punkt to /home/william/nltk_data...
+[nltk_data]   Unzipping tokenizers/punkt.zip.
+True
+```
 - `cd app && python3 app.py`
 
 ```
