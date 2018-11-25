@@ -64,4 +64,15 @@ $ python --version
 Python 3.7.1
 ```
 
-## Under construction!
+## Contributing
+
+Pull requests for new features, bug fixes, and suggestions are welcome!
+
+## License
+
+[GNU General Public License v3.0](https://github.com/williamchanrico/follower-gender-classification/blob/master/LICENSE.md)
+```
+Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.
+
+
+```
