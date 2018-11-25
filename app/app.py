@@ -198,7 +198,7 @@ def index():
 
 def main(args):
     global compute_threshold
-    compute_threshold = os.getenv("COMPUTE_THRESHOLD", 5000)
+    compute_threshold = int(os.getenv("COMPUTE_THRESHOLD", 5000))
     print("Compute threshold is set to {}".format(compute_threshold))
 
     global main_classifier
