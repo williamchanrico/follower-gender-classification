@@ -1,0 +1,171 @@
+{% extends "include/layout.html" %}
+
+{% block title %}Homepage{% endblock %}
+
+{% block head %}
+  {{ super() }}
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            Instagram Follower Gender Classifier
+        </div>
+        <div class="card-body">
+            <div id="alert-placeholder"></div>
+            <form id="classify-form" action="/classify" method="POST">
+                <div class="form-row align-items-center">
+                    <div class="form-group col-md-6">
+                        <label class="sr-only" for="inline-form-input-group-username">Username</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                            <div class="input-group-text">@</div>
+                            </div>
+                            <input type="text" class="form-control" id="inline-form-input-group-username" placeholder="Username" name="username" value="theabernice" required>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="mr-sm-6 sr-only" for="inline-form-algorithm-select">Algorithm</label>
+                        <select class="custom-select mr-sm-6" id="inline-form-algorithm-select" name="algorithm">
+                            <option value="naive-bayes">Naive Bayes</option>
+                            <option value="svm" disabled>SVM</option>
+                            <option value="adaboost" disabled>AdaBoost</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="sr-only" for="inline-form-input-group-follower-limit">Follower Limit</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="inline-form-input-group-follower-limit" placeholder="Follower Limit" name="follower_limit" value="25" required>
+                        </div>
+                        <small id="help" class="form-text text-muted">Limit number of follower(s) to process</small>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="sr-only" for="inline-form-input-group-media-follower-limit">Media per follower Limit</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="inline-form-input-group-media-follower-limit" placeholder="Media per follower Limit" name="media_per_follower_limit" value="8" required>
+                        </div>
+                        <small id="help" class="form-text text-muted">Limit number of media to crawl per follower</small>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="sr-only" for="inline-form-input-group-comments-media-limit">Comments per media Limit</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="inline-form-input-group-comments-media-limit" placeholder="Comments per media Limit" name="comments_per_media_limit" value="25" required>
+                        </div>
+                        <small id="help" class="form-text text-muted">Limit number of comments per media</small>
+                    </div>
+                    <div class="col-auto my-1">
+                        <button type="submit" class="btn btn-primary" id="submit-button">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="progress" id="progress-bar" style="font-size: 1em; height: 30px; display: none;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%" id="progress-bar-child"></div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="collapse multi-collapse" id="result">
+                    <div class="card text-center">
+                        <div class="card-header">Result</div>
+                        <div class="card-body">
+                            <img src="" class="rounded-circle mx-auto d-block shadow" alt="" id="result-pic" height="250px"><br>
+
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title" id="result-title"></h5>
+                                    <p class="card-text" id="result-body"></p>
+                                    <p class="card-text"><small class="text-muted">Processing time: <span id="processing-time"></span></small></p>
+                                    <a href="#" id="result-url" class="btn btn-primary" target="_blank">View Profile</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="collapse multi-collapse show" id="progress">
+                    <div class="card card-body">
+                        <ul class="list-group list-group-flush" id="progress-msg">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="accordion" id="mainAccordion">
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed show" type="button" data-toggle="collapse" data-target="#collapseZero" aria-expanded="true" aria-controls="collapseOne">
+                            Notice
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapseZero" class="collapse show" aria-labelledby="headingZero" data-parent="#mainAccordion">
+                    <div class="card-body">
+                        <p>Due to limited resource and testing  purposes, <b>follower</b> x <b>media_per_follower</b> x <b>comments_per_media</b> are limited to <= <b>{{ data.compute_threshold }}</b></p><br>
+                        <!-- <p>Host it yourself</p> -->
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            #1 Naive Bayes
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#mainAccordion">
+                    <div class="card-body">
+                            <p>Naive Bayes is a simple technique for constructing classifiers: models that assign class labels to problem instances, represented as vectors of feature values, where the class labels are drawn from some finite set. There is not a single algorithm for training such classifiers, but a family of algorithms based on a common principle: all naive Bayes classifiers assume that the value of a particular feature is independent of the value of any other feature, given the class variable. For example, a fruit may be considered to be an apple if it is red, round, and about 10 cm in diameter. A naive Bayes classifier considers each of these features to contribute independently to the probability that this fruit is an apple, regardless of any possible correlations between the color, roundness, and diameter features.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header" id="headingTwo">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            #2 Support Vector Machine (SVM)
+                        </button>
+                    </h5>
+                </div>
+                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#mainAccordion">
+                    <div class="card-body">
+                            <p>Support vector machine constructs a hyperplane or set of hyperplanes in a high- or infinite-dimensional space, which can be used for classification, regression, or other tasks like outliers detection[3]. Intuitively, a good separation is achieved by the hyperplane that has the largest distance to the nearest training-data point of any class (so-called functional margin), since in general the larger the margin the lower the generalization error of the classifier.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header" id="headingThree">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            #3 AdaBoost
+                        </button>
+                    </h5>
+                </div>
+                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#mainAccordion">
+                    <div class="card-body">
+                            <p>Ada-boost, like Random Forest Classifier is another ensemble classifier. (Ensemble classifier are made up of multiple classifier algorithms and whose output is combined result of output of those classifier algorithms).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+    <script type="text/javascript" src="static/js/application.js"></script>
+{% endblock %}
