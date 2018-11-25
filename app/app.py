@@ -70,7 +70,7 @@ class ClientThread(Thread):
 
         self.send_status("false", "data", "User {} has {} follower(s)".format(self._username, userdata['follower_count']))
 
-        self.send_status("false", "message", "Collecting followers")
+        self.send_status("false", "message", "Collecting follower(s)")
         follower_id_list = collector.get_followers_id_list(ig_client, self._username, self._follower_limit)
         total_follower = len(follower_id_list)
 
@@ -87,7 +87,7 @@ class ClientThread(Thread):
                 media_comments = collector.get_media_comments(ig_client, media_id, self._comments_per_media_limit)
                 follower_comments.extend(media_comments)
 
-                self.send_status("false", "message", "Gathering comments from all follower(s)",
+                self.send_status("false", "message", "Gathering comment(s) ",
                     "follower: " + str(follower_idx) + "/" + str(total_follower) + " " +
                     "media: " + str(media_idx) + "/" + str(total_media))
 
