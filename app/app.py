@@ -209,8 +209,9 @@ def main(args):
     global ig_client
     ig_username = os.getenv("IG_USERNAME")
     ig_password = os.getenv("IG_PASSWORD")
-    if ig_username == "" or ig_password == "":
+    if not (ig_username or ig_password):
         print("Please set IG_USERNAME and IG_PASSWORD env variable")
+        sys.exit(1)
 
     print("Logging into instragram account: " + ig_username)
     ig_client = ig.InstagramAPI(ig_username, ig_password)
