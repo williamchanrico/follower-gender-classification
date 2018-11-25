@@ -9,19 +9,25 @@ Consist of 4 parts:
 
 ## Getting Started
 
-```
+```sh
 export IG_USERNAME=
 export IG_PASSWORD=
+
+# To limit the number of processed comments data:
+#   follower_limit x media_per_follower x comments_per_media
+#
+# Defaults to 5000
+export COMPUTE_THRESHOLD=
 ```
 
-Assuming you have `virtualenv` installed:
+Assuming you have `virtualenv` and `python3-pip` installed:
 
 - `virtualenv venv && source venv/bin/activate`
-- `pip install -r requirements.txt`
-- `cd app && ./app.py`
+- `pip3 install -r requirements.txt`
+- `cd app && python3 app.py`
 
 ```
-$ ./app.py -h
+$ python3 app.py -h
 usage: app.py [-h] [-p PORT] [-o HOST] [-d] [-e ENV] [-s SECRET]
 
 optional arguments:
@@ -32,6 +38,13 @@ optional arguments:
   -e ENV, --env ENV     specifies the env for flask to run
   -s SECRET, --secret SECRET
                         specifies the session secret key
+```
+
+## Python Version
+
+```
+$ python --version
+Python 3.7.1
 ```
 
 ## Under construction!

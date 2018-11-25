@@ -18,7 +18,7 @@ from flask import (Flask, render_template, flash, redirect,
 import cache
 import collector
 from naive_bayes import naive_bayes
-from InstagramAPI import InstagramAPI
+from thirdparty import InstagramAPI as ig
 
 client_threads = {}
 app = Flask("Instagram Follower Gender Classifier API")
@@ -213,7 +213,7 @@ def main(args):
         print("Please set IG_USERNAME and IG_PASSWORD env variable")
 
     print("Logging into instragram account: " + ig_username)
-    ig_client = InstagramAPI(ig_username, ig_password)
+    ig_client = ig.InstagramAPI(ig_username, ig_password)
     if not ig_client.login():
         print("Instagram login failed!")
         sys.exit(1)
