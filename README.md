@@ -7,6 +7,12 @@ Consist of 4 parts:
 - The frontend app built with `socketio, flask, html & javascript`
 - and 3 different implementation of classifier algorithm: support vector machine, naive bayes, and adaboost
 
+## Screenshot
+
+![screenshot1](screenshots/screenshot1.png?raw=true "Screenshot1")
+
+![screenshot2](screenshots/screenshot2.png?raw=true "Screenshot2")
+
 ## Getting Started
 
 ```sh
