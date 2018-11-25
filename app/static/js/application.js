@@ -9,7 +9,7 @@ $(document).ready(function() {
 function clientConnect(formElement) {
     var clientID = uuidv4();
     var data = getFormData(formElement);
-    var socket = io.connect('http://' + document.domain + ':' + location.port +
+    var socket = io.connect('//' + document.domain + ':' + location.port +
         '/classify?clientID=' + clientID,  {'forceNew': true});
 
     socket.on('connect', function(){
