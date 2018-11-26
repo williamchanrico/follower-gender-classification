@@ -120,4 +120,4 @@ response back up.zip
 
 #result-log
 !requirements.txt
-*[0-9].txt
+#*[0-9].txt

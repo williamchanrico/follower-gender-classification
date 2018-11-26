@@ -1,0 +1,58 @@
+Running SVM Classifier
+Reading blacklist words file
+Reading raw gender-comment data
+Loaded 23499 male and 51030 female comments
+Stored 10000 male comments
+Stored 10000 female comments
+Total of 34427 words found
+Processing 20000 raw gender-comment data: [----------------------------------------]########################################]
+
+Running tests
+=============
+Kernel: poly
+Gamma: 1
+=============
+
+Test-1
+> Training model...
+> Predicting test data...
+> Accuracy: 65.88%
+
+Test-2
+> Training model...
+> Predicting test data...
+> Accuracy: 64.40%
+
+Test-3
+> Training model...
+> Predicting test data...
+> Accuracy: 63.36%
+
+Test-4
+> Training model...
+> Predicting test data...
+> Accuracy: 65.48%
+
+Test-5
+> Training model...
+> Predicting test data...
+> Accuracy: 64.48%
+
+Test-6
+> Training model...
+> Predicting test data...
+> Accuracy: 65.92%
+
+Test-7
+> Training model...
+> Predicting test data...
+> Accuracy: 63.88%
+
+Test-8
+> Training model...
+> Predicting test data...
+> Accuracy: 64.36%
+
+=====================================
+Avg. Accuracy: 64.72%
+Elapsed time: 745747.49s
