@@ -70,11 +70,15 @@
                     <div class="card text-center">
                         <div class="card-header">Result</div>
                         <div class="card-body">
-                            <img src="" class="rounded-circle mx-auto d-block shadow" alt="" id="result-pic" height="250px"><br>
-
+                            <div class="col-10 col-xs-10 col-sm-8 col-md-6 col-lg-4 mx-auto mb-4">
+                                <img src="" class="rounded-circle responsive mx-auto d-block shadow" alt="" id="result-pic" style="max-width: 75%; height: auto;">
+                            </div>
                             <div class="card text-center">
                                 <div class="card-body">
                                     <h5 class="card-title" id="result-title"></h5>
+                                    <div class="container-canvas col-10 col-xs-10 col-sm-8 col-md-6 col-lg-4 mx-auto mb-4">
+                                        <canvas id="result-chart" width="400" height="400"></canvas>
+                                    </div>
                                     <p class="card-text" id="result-body"></p>
                                     <p class="card-text"><small class="text-muted">Processing time: <span id="processing-time"></span></small></p>
                                     <a href="#" id="result-url" class="btn btn-primary" target="_blank">View Profile</a>
@@ -112,7 +116,7 @@
 
                 <div id="collapseZero" class="collapse show" aria-labelledby="headingZero" data-parent="#mainAccordion">
                     <div class="card-body">
-                        <p>Due to limited resources and for testing  purposes, <b>follower</b> x <b>media_per_follower</b> x <b>comments_per_media</b> are limited to <= <b>{{ data.compute_threshold }}</b></p><br>
+                        <p>Due to limited resources, total gathered comment(s) are limited to <= <b>{{ data.compute_threshold }}</b></p><br>
                         <!-- <p>Host it yourself</p> -->
                     </div>
                 </div>
@@ -167,5 +171,7 @@
 
 {% block script %}
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
+    <script type="text/javascript" src="//cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script type="text/javascript" src="static/js/application.js"></script>
 {% endblock %}

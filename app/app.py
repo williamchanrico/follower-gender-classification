@@ -52,16 +52,12 @@ class ClientThread(Thread):
         if not (self._algorithm or self._username):
             return
 
-        if self._follower_limit * self._media_per_follower_limit * self._comments_per_media_limit > compute_threshold:
-            self.send_status("true", "error", "warning", "Sorry, <b>follower</b> x <b>media_per_follower</b> " +
-                "x <b>comments_per_media</b> passed the {} threshold!".format(compute_threshold))
-            return
-
         self.send_status("false", "message", "Getting basic info on {}".format(self._username))
         try:
             userdata = collector.get_user_data(ig_client, self._username)
+            time.sleep(1)
         except:
-            self.send_status("true", "error", "danger", "User not found!")
+            self.send_status("true", "error", "danger", "User {} not found!".format(self._username))
             return
 
         if userdata["is_private"]:
@@ -70,49 +66,69 @@ class ClientThread(Thread):
 
         self.send_status("false", "data", "User {} has {} follower(s)".format(self._username, userdata['follower_count']))
 
-        self.send_status("false", "message", "Collecting follower(s)")
+        self.send_status("false", "message", "Getting list of follower(s)")
         follower_id_list = collector.get_followers_id_list(ig_client, self._username, self._follower_limit)
-        total_follower = len(follower_id_list)
 
-        self.send_status("false", "data", "Collected follower(s)", str(total_follower))
-
-        all_follower_comments = []
-        total_comment = 0
-        for follower_idx, follower in enumerate(follower_id_list):
-            follower_comments = []
-
-            all_media_id = collector.get_all_media_id(ig_client, follower, self._media_per_follower_limit)
-            total_media = len(all_media_id)
-            for media_idx, media_id in enumerate(all_media_id):
-                media_comments = collector.get_media_comments(ig_client, media_id, self._comments_per_media_limit)
-                follower_comments.extend(media_comments)
-
-                self.send_status("false", "message", "Gathering comment(s) ",
-                    "follower: " + str(follower_idx) + "/" + str(total_follower) + " " +
-                    "media: " + str(media_idx) + "/" + str(total_media))
-
-            total_comment += len(follower_comments)
-            all_follower_comments.append(follower_comments)
-
-        self.send_status("false", "data", "Collected comment(s) data", str(total_comment))
+        collected_comments_data = gather_comments(self._client_id, follower_id_list,
+            self._media_per_follower_limit, self._comments_per_media_limit)
 
         self.send_status("false", "message", "Running " + self._algorithm + " algorithm")
-        time.sleep(1)
+        time.sleep(2)
 
-        male, female = classify(self._client_id, self._algorithm, all_follower_comments)
-
+        male, female = classify(self._client_id, self._algorithm, collected_comments_data)
         self.send_status("false", "data", "Male count", str(male))
         self.send_status("false", "data", "Female count", str(female))
 
         self.send_status("true", "message", "Done", "There are {} male(s) and {} female(s)".format(male, female),
             extra=str(self._username) + "," +
                 "{0:.2f}s".format(time.time() - start_time) + "," +
-                str(userdata['hd_profile_pic_url_info']['url'])
+                str(userdata['hd_profile_pic_url_info']['url']) + "," +
+                str(male) + "," +
+                str(female)
         )
 
 
 def load_classifier(model):
     return cache.load_model(model)
+
+
+def gather_comments(client_id, follower_id_list, media_per_follower_limit, comments_per_media_limit):
+    total_follower = len(follower_id_list)
+    client_threads[client_id].send_status("false", "data", "Targeting {} follower(s)".format(total_follower))
+
+    collected_comments_data = []
+    collected_comments_count = 0
+    for follower_idx, follower in enumerate(follower_id_list):
+        follower_comments = []
+
+        all_media_id = collector.get_all_media_id(ig_client, follower, media_per_follower_limit)
+        total_media = len(all_media_id)
+        for media_idx, media_id in enumerate(all_media_id):
+            media_comments = collector.get_media_comments(ig_client, media_id, comments_per_media_limit)
+
+            follower_comments.extend(media_comments)
+
+            client_threads[client_id].send_status("false", "message", "Gathering comment ",
+                "follower: " + str(follower_idx) + "/" + str(total_follower) + " " +
+                "media: " + str(media_idx) + "/" + str(total_media))
+
+        if collected_comments_count + len(follower_comments) > compute_threshold:
+            client_threads[client_id].send_status("false", "data", "Reached the {} compute threshold!".format(compute_threshold))
+            client_threads[client_id].send_status("false", "error", "warning",
+                "Reached compute threshold, stopped gathering at {} comment(s)".format(compute_threshold))
+
+            del follower_comments[compute_threshold - collected_comments_count:]
+            collected_comments_data.append(follower_comments)
+            collected_comments_count += len(follower_comments)
+            break
+        else:
+            collected_comments_data.append(follower_comments)
+            collected_comments_count += len(follower_comments)
+
+    client_threads[client_id].send_status("false", "data", "Collected comment(s)", str(collected_comments_count))
+    client_threads[client_id].send_status("false", "data", "Collected follower(s)", str(total_follower))
+
+    return collected_comments_data
 
 
 def classify(client_id, algorithm, data):
@@ -150,7 +166,7 @@ def classify(client_id, algorithm, data):
         # Under construction
         pass
 
-    return (total_male, total_female)
+    return total_male, total_female
 
 
 @socketio.on('connect', namespace="/classify")
@@ -219,7 +235,14 @@ def main(args):
         print("Instagram login failed!")
         sys.exit(1)
 
-    app.run(host=args.host, port=args.port)
+    options = {
+        'host': args.host,
+        'port': args.port
+    }
+    if args.ssl_context:
+        options['ssl_context'] = args.ssl_context
+
+    app.run(**options)
 
 
 if __name__ == "__main__":
@@ -249,6 +272,14 @@ if __name__ == "__main__":
         dest="debug",
         default=False,
         help="specifies the debug mode")
+
+    parser.add_argument(
+        "-l",
+        "--ssl",
+        action="store",
+        dest="ssl_context",
+        default=None,
+        help="specifies ssl_context for flask app")
 
     parser.add_argument(
         "-e",

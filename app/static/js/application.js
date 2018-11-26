@@ -28,16 +28,26 @@ function clientConnect(formElement) {
         if(msg.type == "data") {
             console.log("Received data\n" + msg.header + ":\n" + msg.body);
 
+            var data = "";
+            if(msg.body != "") {
+                data = msg.header + ": " + msg.body;
+            } else {
+                data = msg.header;
+            }
+
             var ul = document.getElementById("progress-msg");
             var li = document.createElement("li");
-            li.appendChild(document.createTextNode(msg.header + ": " + msg.body));
+            li.appendChild(document.createTextNode(data));
             li.setAttribute("class", "list-group-item");
             ul.appendChild(li);
         }
 
+        if(msg.type == "error") {
+            showAlert(msg.header, msg.body)
+        }
+
         if(msg.done == "true"){
             if(msg.type == "error") {
-                showAlert(msg.header, msg.body)
                 finishProgress();
                 socket.disconnect();
 
@@ -45,16 +55,59 @@ function clientConnect(formElement) {
             }
 
             var extras = msg.extra.split(',');
+            var extra_username = extras[0];
+            var extra_processing_time = extras[1];
+            var extra_pic_url = extras[2];
+            var extra_male_count = extras[3];
+            var extra_female_count = extras[4];
 
             finishProgress();
 
-            $('#result-title').html(extras[0]);
+            $('#result-title').html(extra_username);
             $('#result-body').html(msg.body);
-            $('#processing-time').html(extras[1]);
-            $('#result-pic').attr('src', extras[2]);
-            $('#result-url').attr('href', 'https://instagram.com/' + extras[0] + '/');
-            $('#result').collapse('show');
+            $('#processing-time').html(extra_processing_time);
+            $('#result-pic').attr('src', extra_pic_url);
+            $('#result-url').attr('href', '//instagram.com/' + extra_username + '/');
 
+            var chartCtx = $("#result-chart");
+            var chartData = {
+                labels: ['Male', 'Female'],
+                datasets: [{
+                    label: 'Gender percentange',
+                    data: [extra_male_count, extra_female_count],
+                    backgroundColor: [
+                        'rgba(60, 210, 255, 255)',
+                        'rgba(255, 149, 235, 255)'
+                    ]
+                }]
+            }
+            var chartOpt = {
+                plugins: {
+                    datalabels: {
+                        formatter: (value, ctx) => {
+                            let sum = 0;
+                            let dataArr = ctx.chart.data.datasets[0].data;
+                            dataArr.map(data => {
+                                sum += data;
+                            });
+                            let percentage = (value*100 / sum).toFixed(2)+"%";
+                            return percentage;
+                        },
+                        color: '#fff',
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            }
+
+            var result_chart = new Chart(chartCtx, {
+                type: 'doughnut',
+                data: chartData,
+                options: chartOpt
+            });
+
+            $('#result').collapse('show');
             socket.disconnect();
         }else{
             var progress_message = msg.header;
