@@ -27,11 +27,12 @@ def load_blacklist_words(filename):
     BLACKLIST_WORDS = [x.strip() for x in BLACKLIST_WORDS]
 
 
-def run_tests(data, label, size, split, kernel, gamma):
+def run_tests(data, label, size, split, kernel, gamma, coef):
     print("\n\nRunning tests")
     print("=============")
     print("Kernel:", kernel)
     print("Gamma:", gamma)
+    print("Coef:", coef)
     print("=============\n")
     avg_accuracy = 0
 
@@ -62,7 +63,7 @@ def run_tests(data, label, size, split, kernel, gamma):
         print("Avg. Accuracy: {0:.2f}%".format(avg_accuracy * 100 / split))
     else:
         print("> Training model using {} data".format(len(data)))
-        model = svm.SVC(C=10, kernel=kernel, gamma=gamma)
+        model = svm.SVC(C=coef, kernel=kernel, gamma=gamma)
         model.fit(data, label)
 
         cache_name = "model/gender_classifier_{}.p".format(len(data))
@@ -148,7 +149,7 @@ def main(args):
     if args.cache:
         cache.cache_data_and_label(data, label, word_count)
 
-    run_tests(data, label, total, args.split, args.kernel, args.gamma)
+    run_tests(data, label, total, args.split, args.kernel, args.gamma, args.coef)
 
     print("Elapsed time: {0:.2f}s".format(time.time() - start_time))
 
@@ -192,7 +193,15 @@ if __name__ == "__main__":
         default=False,
         help="Cache processed raw data")
 
-    # Kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’.
+    parser.add_argument(
+        "-o",
+        "--coef",
+        action="store",
+        dest="coef",
+        default=10,
+        type=int,
+        help="Kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’")
+
     parser.add_argument(
         "-g",
         "--gamma",
@@ -200,7 +209,7 @@ if __name__ == "__main__":
         dest="gamma",
         default=1,
         type=int,
-        help="Kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’")
+        help="Gamma value")
 
     # Specifies the kernel type to be used in the algorithm
     # Must be one of ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’ or a
