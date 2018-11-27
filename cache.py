@@ -41,7 +41,7 @@ def cache_label(label, filename):
             f.write(str(l) + "\n")
 
 def cache_model(data, filename):
-    print("Saving trained model into '{}'\n".format(filename))
+    print("Saving trained model into {}\n".format(filename))
     with open(filename, "wb") as save_file:
         pickle.dump(data, save_file)
 

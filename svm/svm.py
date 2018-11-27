@@ -13,7 +13,7 @@ import time
 
 from progress import end_progress, progress, start_progress
 from sklearn import svm
-from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_val_score
 
 import cache
 
@@ -34,41 +34,24 @@ def run_tests(data, label, size, split, kernel, gamma, coef):
     print("Gamma:", gamma)
     print("Coef:", coef)
     print("=============\n")
-    avg_accuracy = 0
+
+    model = svm.SVC(C=coef, kernel=kernel, gamma=gamma)
 
     if split > 1:
-        for i in range(1, split + 1):
-            test_set = data[round((i - 1) * size / split):round((i) * size / split)]
-            label_test_set = label[round((i - 1) * size / split):round((i) * size / split)]
-
-            training_set = data[0:round((i - 1) * size / split)]
-            training_set.extend(data[round((i) * size / split):])
-
-            label_training_set = label[0:round((i - 1) * size / split)]
-            label_training_set.extend(label[round((i) * size / split):])
-
-            print("Test-" + str(i))
-            print("> Training model...")
-            model = svm.SVC(C=10, kernel=kernel, gamma=gamma)
-            model.fit(training_set, label_training_set)
-            model.score(training_set, label_training_set)
-
-            print("> Predicting test data...")
-            label_predicted = model.predict(test_set)
-
-            avg_accuracy += accuracy_score(label_test_set, label_predicted)
-            print("> Accuracy: {0:.2f}%\n".format(accuracy_score(label_test_set, label_predicted) * 100))
+        print("> Training model using {} data (Cross-validation)".format(size))
+        scores = cross_val_score(model, data, label, cv=split)
 
         print("=====================================")
-        print("Avg. Accuracy: {0:.2f}%".format(avg_accuracy * 100 / split))
+        print("Avg. Accuracy: {0:.2f}%\n".format(scores.mean() * 100))
     else:
-        print("> Training model using {} data".format(len(data)))
-        model = svm.SVC(C=coef, kernel=kernel, gamma=gamma)
+        print("> Training model using {} data".format(size))
         model.fit(data, label)
 
-        cache_name = "model/gender_classifier_{}.p".format(len(data))
+        cache_name = "model/gender_classifier_{}.p".format(size)
         print("Caching trained model into {}".format(cache_name))
         cache.cache_model(model, cache_name)
+
+    return model
 
 
 def main(args):

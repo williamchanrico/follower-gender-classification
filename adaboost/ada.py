@@ -13,7 +13,7 @@ import time
 
 from progress import end_progress, progress, start_progress
 from sklearn.ensemble import AdaBoostClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_val_score
 from sklearn.tree import DecisionTreeClassifier
 
 import cache
@@ -28,52 +28,33 @@ def load_blacklist_words(filename):
     BLACKLIST_WORDS = [x.strip() for x in BLACKLIST_WORDS]
 
 
-def run_tests(data, label, size, split, algorithm="SAMME.R", n_estimator=200):
+def run_tests(data, label, size, split, algorithm="SAMME.R", n_estimator=200, max_depth=3):
     print("\n\nRunning tests")
     print("=============")
     print("Algorithm:", algorithm)
     print("N Estimator:", n_estimator)
     print("=============\n")
-    avg_accuracy = 0
+
+    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth),
+                                    algorithm=algorithm,
+                                    n_estimators=n_estimator)
 
     if split > 1:
-        for i in range(1, split + 1):
-            test_set = data[round((i - 1) * size / split):round((i) * size / split)]
-            label_test_set = label[round((i - 1) * size / split):round((i) * size / split)]
-
-            training_set = data[0:round((i - 1) * size / split)]
-            training_set.extend(data[round((i) * size / split):])
-
-            label_training_set = label[0:round((i - 1) * size / split)]
-            label_training_set.extend(label[round((i) * size / split):])
-
-            print("Test-" + str(i))
-            print("> Training model...")
-            # Create and fit an AdaBoosted decision tree
-            model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1),
-                                    algorithm=algorithm,
-                                    n_estimators=n_estimator)
-            model.fit(training_set, label_training_set)
-            model.score(training_set, label_training_set)
-
-            print("> Predicting test data...")
-            label_predicted = model.predict(test_set)
-
-            avg_accuracy += accuracy_score(label_test_set, label_predicted)
-            print("> Accuracy: {0:.2f}%\n".format(accuracy_score(label_test_set, label_predicted) * 100))
+        print("> Training model using {} data (Cross-validation)".format(size))
+        scores = cross_val_score(model, data, label, cv=split)
 
         print("=====================================")
-        print("Avg. Accuracy: {0:.2f}%".format(avg_accuracy * 100 / split))
+        print("Avg. Accuracy: {0:.2f}%\n".format(scores.mean() * 100))
     else:
-        print("> Training model using {} data".format(len(data)))
-        model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1),
-                                    algorithm=algorithm,
-                                    n_estimators=n_estimator)
+        print("> Training model using {} data".format(size))
+
         model.fit(data, label)
 
-        cache_name = "model/gender_classifier_{}.p".format(len(data))
+        cache_name = "model/gender_classifier_{}.p".format(size)
         print("Caching trained model into {}".format(cache_name))
         cache.cache_model(model, cache_name)
+
+    return model
 
 
 def main(args):
@@ -206,6 +187,15 @@ if __name__ == "__main__":
         default=200,
         type=int,
         help="The maximum number of estimators at which boosting is terminated.")
+
+    parser.add_argument(
+        "-x",
+        "--max-depth",
+        action="store",
+        dest="max_depth",
+        default=3,
+        type=int,
+        help="Max depth param for decision tree.")
 
     parser.add_argument(
         "-a",

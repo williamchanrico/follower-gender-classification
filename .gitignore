@@ -111,13 +111,17 @@ pictures/
 *.jpg
 *.jpeg
 
-#misc
+# misc
 testing.py
 response back up.zip
 
-#cache
+# cache
 *.dat
 
-#result-log
+# result-log
 !requirements.txt
 #*[0-9].txt
+
+# model
+*.p
+!data/
