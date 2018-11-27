@@ -124,4 +124,4 @@ response back up.zip
 
 # model
 *.p
-!data/
+!data/***
