@@ -33,9 +33,8 @@ def load_blacklist_words(filename):
         BLACKLIST_WORDS = f.readlines()
     BLACKLIST_WORDS = [x.strip() for x in BLACKLIST_WORDS]
 
-def read_file(filename):
-    load_blacklist_words("../data/blacklist.txt")
 
+def read_file(filename):
     with open(filename, "r", encoding="utf-8") as f:
         file = json.load(f)
         if str(file["gender"]) == "False":  # Invalid gender
@@ -139,6 +138,10 @@ def nb_classify(classifier, text=""):
 
 def main(args):
     print("Running Naive-Bayes Classifier\n")
+
+    print("Reading blacklist words file")
+    load_blacklist_words("../data/blacklist.txt")
+
     if args.model != "":
         print("Loading model file: {}\n".format(args.model))
         classifier = cache.load_model(args.model)

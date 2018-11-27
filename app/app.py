@@ -27,6 +27,15 @@ socketio = SocketIO(app)
 main_classifier = {}
 compute_threshold = 0
 
+BLACKLIST_WORDS = []
+
+
+def load_blacklist_words(filename):
+    global BLACKLIST_WORDS
+    with open(filename) as f:
+        BLACKLIST_WORDS = f.readlines()
+    BLACKLIST_WORDS = [x.strip() for x in BLACKLIST_WORDS]
+
 
 class ClientThread(Thread):
     def __init__(self, client_id):
@@ -218,9 +227,9 @@ def main(args):
     print("Compute threshold is set to {}".format(compute_threshold))
 
     global main_classifier
-    main_classifier['naive-bayes'] = load_classifier('../naive_bayes/model/gender_classifier_74405.p')
-    main_classifier['adaboost'] = load_classifier('../adaboost/model/gender_classifier_1000.p')
-    main_classifier['svm'] = load_classifier('../svm/model/gender_classifier_1000.p')
+    main_classifier['naive-bayes'] = load_classifier('../data/model/naive_bayes_74405.p')
+    # main_classifier['adaboost'] = load_classifier('../adaboost/model/gender_classifier_1000.p')
+    # main_classifier['svm'] = load_classifier('../svm/model/gender_classifier_1000.p')
 
     global ig_client
     ig_username = os.getenv("IG_USERNAME")
@@ -234,6 +243,9 @@ def main(args):
     if not ig_client.login():
         print("Instagram login failed!")
         sys.exit(1)
+
+    print("Reading blacklist words file")
+    load_blacklist_words("../data/blacklist.txt")
 
     options = {
         'host': args.host,

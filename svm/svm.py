@@ -66,6 +66,17 @@ def main(args):
         male_comment = json.load(f)
     with open('../data/female-comments.json', 'r') as f:
         female_comment = json.load(f)
+
+    # Lower case all comments
+    male_comment = [[x[0], x[1].lower()] for x in male_comment]
+    female_comment = [[x[0], x[1].lower()] for x in female_comment]
+
+    # Filter blacklisted words in comments
+    male_comment = [[x[0], x[1]] for x in male_comment if
+        all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
+    female_comment = [[x[0], x[1]] for x in female_comment if
+        all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
+
     random.shuffle(male_comment)
     random.shuffle(female_comment)
     print("Loaded {} male and {} female comments".format(len(male_comment), len(female_comment)))
@@ -92,8 +103,7 @@ def main(args):
 
     list_of_words = set()
     for data in gender_comment:
-        words = list(filter(lambda x: x not in BLACKLIST_WORDS, data[1].split(' ')))
-        list_of_words.update(words)
+        list_of_words.update(data[1].split(' '))
     list_of_words = list(list_of_words)
     word_count = len(list_of_words)
 
