@@ -49,7 +49,10 @@ def cache_model(data, filename):
 def cache_data_and_label(data, label, word_count):
     print("Caching raw data... [suffix: {}]".format(TIMESTAMP))
     cache_label(label, "label")
-    cache_data(data, word_count, "data")
+    if type(data) is list:
+        cache_data(data, word_count, "data")
+    else:
+        cache_model(data, "data-matrix-{}.dat".format(TIMESTAMP))
 
 
 def cache_list_of_words(list_of_words):
