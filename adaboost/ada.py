@@ -110,6 +110,9 @@ def main(args):
     list_of_words = list(list_of_words)
     word_count = len(list_of_words)
 
+    if args.cache:
+        cache.cache_list_of_words(list_of_words)
+
     print("Total of {} words found\n".format(word_count))
 
     data = []

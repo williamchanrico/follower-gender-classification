@@ -52,7 +52,15 @@ def cache_data_and_label(data, label, word_count):
     cache_data(data, word_count, "data")
 
 
-def load_model(model_file):
-    with open(model_file, "rb") as f:
+def cache_list_of_words(list_of_words):
+    filename = "list-of-words-{}.p".format(len(list_of_words))
+    print("Caching list of words into {}".format(filename))
+
+    with open(filename, "wb") as save_file:
+        pickle.dump(list_of_words, save_file)
+
+
+def load_pickle(file):
+    with open(file, "rb") as f:
         data = pickle.Unpickler(f).load()
     return data

@@ -28,7 +28,7 @@ main_classifier = {}
 compute_threshold = 0
 
 BLACKLIST_WORDS = []
-
+LIST_OF_WORDS = []
 
 def load_blacklist_words(filename):
     global BLACKLIST_WORDS
@@ -97,8 +97,30 @@ class ClientThread(Thread):
         )
 
 
-def load_classifier(model):
-    return cache.load_model(model)
+def load_classifier(model_file):
+    return cache.load_pickle(model_file)
+
+
+def construct_csr_matrix(comments):
+    for comment in comments:
+        wc = {}
+        for word in comment.split(' '):
+            if word in wc:
+                wc[word] += 1
+            else:
+                wc[word] = 1
+
+        d = []
+        for idx in range(wc):
+            count = 0
+            if list_of_words[idx] in wc:
+                count = wc[list_of_words[idx]]
+            d.append(count)
+        data.append(d)
+
+        progress((i + 1) / total * 100)
+        if i == total:
+            break
 
 
 def gather_comments(client_id, follower_id_list, media_per_follower_limit, comments_per_media_limit):
@@ -250,6 +272,10 @@ def main(args):
 
     print("Reading blacklist words file")
     load_blacklist_words("../data/blacklist.txt")
+
+    print("Reading list of words")
+    global LIST_OF_WORDS
+    LIST_OF_WORDS = cache.load_pickle("../data/list-of-words-744.p")
 
     options = {
         'host': args.host,
