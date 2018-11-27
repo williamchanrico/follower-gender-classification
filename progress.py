@@ -20,4 +20,5 @@ def progress(x):
 
 
 def end_progress():
+    print("\n")
     sys.stdout.flush()
