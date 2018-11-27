@@ -14,7 +14,7 @@ import time
 from progress import end_progress, progress, start_progress
 
 import xgboost
-from scipy.sparse import csr_matrix
+from scipy.sparse import coo_matrix, vstack
 from sklearn.model_selection import cross_val_score
 
 import cache
@@ -114,7 +114,7 @@ def main(args):
 
     print("Total of {} words found\n".format(word_count))
 
-    data = []
+    data = coo_matrix((1, 1))
     label = []
     total = len(gender_comment)
     start_progress("Processing {} raw gender-comment data".format(total))
@@ -137,14 +137,17 @@ def main(args):
             if list_of_words[idx] in wc:
                 count = wc[list_of_words[idx]]
             d.append(count)
-        data.append(d)
+
+        if i == 0:
+            data = coo_matrix(d)
+        else:
+            data = vstack((data, coo_matrix(d)))
 
         progress((i + 1) / total * 100)
         if i == total:
             break
     end_progress()
 
-    data = csr_matrix(data)
     if args.cache:
         cache.cache_data_and_label(data, label, word_count)
 
