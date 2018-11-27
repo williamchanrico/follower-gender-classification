@@ -115,6 +115,10 @@ def gather_comments(client_id, follower_id_list, media_per_follower_limit, comme
         for media_idx, media_id in enumerate(all_media_id):
             media_comments = collector.get_media_comments(ig_client, media_id, comments_per_media_limit)
 
+            # Filter comments that contains blacklisted words
+            media_comments = [x for x in media_comments if
+                all(c not in BLACKLIST_WORDS for c in x.split(' '))]
+
             follower_comments.extend(media_comments)
 
             client_threads[client_id].send_status("false", "message", "Gathering comment ",
