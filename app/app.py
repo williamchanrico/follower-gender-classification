@@ -29,9 +29,9 @@ client_threads = {}
 app = Flask("Instagram Follower Gender Classifier API")
 socketio = SocketIO(app)
 
-main_classifier = {}
 main_model = {}
 list_of_words = {}
+main_classifier = {}
 compute_threshold = 0
 
 BLACKLIST_WORDS = []
@@ -310,20 +310,6 @@ def main(args):
 
     print("Reading blacklist words file")
     load_blacklist_words("../data/blacklist.txt")
-
-    #algorithm = "xgboost"
-    #matrix_data_list = construct_follower_comments_matrix_list([["bang", "mobil ganteng", "ganteng mobil sepatu bro"], ["ganteng", "ganteng mobil sepatu follower dua"]], list_of_words[algorithm])
-    #matrix_data_list = construct_follower_comments_matrix_list(data, list_of_words[algorithm])
-    #for matrix_data in matrix_data_list:
-        #try:
-            #print(matrix_data.toarray())
-            #answer = main_classifier[algorithm](main_model[algorithm], matrix_data)
-            #print((answer == 0).sum())
-            #print((answer == 1).sum())
-        #except:
-            #continue
-    #sys.exit()
-
 
     options = {
         'host': args.host,
