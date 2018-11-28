@@ -8,6 +8,7 @@ from base64 import b64encode
 import time
 import random
 import json
+from collections import Counter
 
 from flask_socketio import SocketIO, emit
 from threading import Thread, Event
@@ -18,17 +19,22 @@ from flask import (Flask, render_template, flash, redirect,
 import cache
 import collector
 from naive_bayes import naive_bayes
+from xgb import xgb
+from adab import adab
+from svm import svm
 from thirdparty import InstagramAPI as ig
+from scipy.sparse import coo_matrix, vstack
 
 client_threads = {}
 app = Flask("Instagram Follower Gender Classifier API")
 socketio = SocketIO(app)
 
 main_classifier = {}
+main_model = {}
+list_of_words = {}
 compute_threshold = 0
 
 BLACKLIST_WORDS = []
-LIST_OF_WORDS = []
 
 def load_blacklist_words(filename):
     global BLACKLIST_WORDS
@@ -101,28 +107,6 @@ def load_classifier(model_file):
     return cache.load_pickle(model_file)
 
 
-def construct_csr_matrix(comments):
-    for comment in comments:
-        wc = {}
-        for word in comment.split(' '):
-            if word in wc:
-                wc[word] += 1
-            else:
-                wc[word] = 1
-
-        d = []
-        for idx in range(wc):
-            count = 0
-            if list_of_words[idx] in wc:
-                count = wc[list_of_words[idx]]
-            d.append(count)
-        data.append(d)
-
-        progress((i + 1) / total * 100)
-        if i == total:
-            break
-
-
 def gather_comments(client_id, follower_id_list, media_per_follower_limit, comments_per_media_limit):
     total_follower = len(follower_id_list)
     client_threads[client_id].send_status("false", "data", "Targeting {} follower(s)".format(total_follower))
@@ -166,6 +150,37 @@ def gather_comments(client_id, follower_id_list, media_per_follower_limit, comme
     return collected_comments_data
 
 
+def construct_follower_comments_matrix_list(follower_comments, list_of_words):
+    """
+    Input data is a list of list.
+    Returns list of coo_matrix of every follower's comments.
+    """
+
+    total_words = len(list_of_words)
+    matrix_list = []
+    for comments in follower_comments:
+        data = coo_matrix((1, 1))
+        for c_idx, comment in enumerate(comments):
+            wc = Counter()
+            for word in comment.split():
+                wc[word] += 1
+
+            d = []
+            for idx in range(total_words):
+                count = 0
+                if list_of_words[idx] in wc:
+                    count = wc[list_of_words[idx]]
+                d.append(count)
+
+            if c_idx == 0:
+                data = coo_matrix(d)
+            else:
+                data = vstack((data, coo_matrix(d)))
+        matrix_list.append(data)
+
+    return matrix_list
+
+
 def classify(client_id, algorithm, data):
     """
     Input data is a list of list.
@@ -184,22 +199,32 @@ def classify(client_id, algorithm, data):
             possible_male = 0
             possible_female = 0
             for comment in follower:
-                if naive_bayes.nb_classify(main_classifier["naive-bayes"], comment) == 0:
+                if main_classifier[algorithm](main_model[algorithm], comment) == 0:
                     possible_female += 1
                 else:
                     possible_male += 1
 
-            if possible_female >= possible_male:
+            if possible_female > possible_male:
                 total_female += 1
             else:
                 total_male += 1
 
-    elif algorithm == "svm":
-        # Under construction
-        pass
-    elif algorithm == "adaboost":
-        # Under construction
-        pass
+    elif algorithm in ["adaboost", "svm", "xgboost"]:
+        matrix_data_list = construct_follower_comments_matrix_list(data, list_of_words[algorithm])
+        for follower_idx, matrix_data in enumerate(matrix_data_list):
+            client_threads[client_id].send_status("false", "message",
+                "Processing follower", " {}/{}".format(follower_idx, total_follower))
+
+            try:
+                answer = main_classifier[algorithm](main_model[algorithm], matrix_data)
+                if (answer == 0).sum() > (answer == 1).sum():
+                    total_male += 1
+                else:
+                    total_female += 1
+            except:
+                continue
+    else:
+        client_threads[client_id].send_status("false", "error", "danger", "Invalid algorithm!")
 
     return total_male, total_female
 
@@ -252,10 +277,23 @@ def main(args):
     compute_threshold = int(os.getenv("COMPUTE_THRESHOLD", 5000))
     print("Compute threshold is set to {}".format(compute_threshold))
 
+    global main_model
+    main_model['naive-bayes'] = load_classifier('../data/model/naive_bayes_74405.p')
+    main_model['svm'] = load_classifier('../data/model/svm_74420.p')
+    main_model['adaboost'] = load_classifier('../data/model/ada_74420.p')
+    main_model['xgboost'] = load_classifier('../data/model/xg_74420.p')
+
+    print("Reading list of words")
+    global list_of_words
+    list_of_words["svm"] = cache.load_pickle("../data/model/svm_list_of_words_90670.p")
+    list_of_words["adaboost"] = cache.load_pickle("../data/model/adaboost_list_of_words_90670.p")
+    list_of_words["xgboost"] = cache.load_pickle("../data/model/xgboost_list_of_words_90670.p")
+
     global main_classifier
-    main_classifier['naive-bayes'] = load_classifier('../data/model/naive_bayes_74405.p')
-    # main_classifier['adaboost'] = load_classifier('../adaboost/model/gender_classifier_1000.p')
-    # main_classifier['svm'] = load_classifier('../svm/model/gender_classifier_1000.p')
+    main_classifier['naive-bayes'] = naive_bayes.nb_classify
+    main_classifier['svm'] = svm.svm_classify
+    main_classifier['adaboost'] = adab.ada_classify
+    main_classifier['xgboost'] = xgb.xg_classify
 
     global ig_client
     ig_username = os.getenv("IG_USERNAME")
@@ -273,9 +311,19 @@ def main(args):
     print("Reading blacklist words file")
     load_blacklist_words("../data/blacklist.txt")
 
-    print("Reading list of words")
-    global LIST_OF_WORDS
-    LIST_OF_WORDS = cache.load_pickle("../data/list-of-words-744.p")
+    #algorithm = "xgboost"
+    #matrix_data_list = construct_follower_comments_matrix_list([["bang", "mobil ganteng", "ganteng mobil sepatu bro"], ["ganteng", "ganteng mobil sepatu follower dua"]], list_of_words[algorithm])
+    #matrix_data_list = construct_follower_comments_matrix_list(data, list_of_words[algorithm])
+    #for matrix_data in matrix_data_list:
+        #try:
+            #print(matrix_data.toarray())
+            #answer = main_classifier[algorithm](main_model[algorithm], matrix_data)
+            #print((answer == 0).sum())
+            #print((answer == 1).sum())
+        #except:
+            #continue
+    #sys.exit()
+
 
     options = {
         'host': args.host,

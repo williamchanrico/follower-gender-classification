@@ -55,6 +55,10 @@ def run_tests(data, label, size, split, kernel, gamma, coef):
     return model
 
 
+def svm_classify(classifier, matrix_data):
+    return classifier.predict(matrix_data)
+
+
 def main(args):
     start_time = time.time()
     print("Running SVM Classifier")

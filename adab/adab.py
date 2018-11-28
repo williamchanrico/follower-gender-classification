@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# https://xgboost.readthedocs.io/en/latest/get_started.html
+# https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html
 
 import argparse
 import json
@@ -12,10 +12,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import time
 
 from progress import end_progress, progress, start_progress
-
-import xgboost
-from scipy.sparse import coo_matrix, vstack
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.model_selection import cross_val_score
+from sklearn.tree import DecisionTreeClassifier
+from scipy.sparse import coo_matrix, vstack
 
 import cache
 
@@ -29,15 +29,16 @@ def load_blacklist_words(filename):
     BLACKLIST_WORDS = [x.strip() for x in BLACKLIST_WORDS]
 
 
-def run_tests(data, label, size, split=1, gamma=1, learning_rate=0.1, n_estimators=180):
+def run_tests(data, label, size, split, algorithm="SAMME.R", n_estimator=200, max_depth=3):
     print("\n\nRunning tests")
     print("=============")
-    print("Gamma: {}".format(gamma))
-    print("Learning Rate: {}".format(learning_rate))
-    print("N Estimator: {}".format(n_estimators))
+    print("Algorithm:", algorithm)
+    print("N Estimator:", n_estimator)
     print("=============\n")
 
-    model = xgboost.XGBClassifier(gamma=gamma, learning_rate=learning_rate, n_estimators=n_estimators)
+    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth),
+                                    algorithm=algorithm,
+                                    n_estimators=n_estimator)
 
     if split > 1:
         print("> Training model using {} data (Cross-validation)".format(size))
@@ -47,6 +48,7 @@ def run_tests(data, label, size, split=1, gamma=1, learning_rate=0.1, n_estimato
         print("Avg. Accuracy: {0:.2f}%\n".format(scores.mean() * 100))
     else:
         print("> Training model using {} data".format(size))
+
         model.fit(data, label)
 
         cache_name = "model/gender_classifier_{}.p".format(size)
@@ -56,9 +58,13 @@ def run_tests(data, label, size, split=1, gamma=1, learning_rate=0.1, n_estimato
     return model
 
 
+def ada_classify(classifier, matrix_data):
+    return classifier.predict(matrix_data)
+
+
 def main(args):
     start_time = time.time()
-    print("Running XGBoost Classifier")
+    print("Running AdaBoost Classifier")
 
     print("Reading blacklist words file")
     load_blacklist_words("../data/blacklist.txt")
@@ -151,7 +157,7 @@ def main(args):
     if args.cache:
         cache.cache_data_and_label(data, label, word_count)
 
-    run_tests(data, label, total, args.split, args.gamma, args.learning_rate)
+    run_tests(data, label, total, args.split, args.algorithm, args.n_estimator)
 
     print("Elapsed time: {0:.2f}s".format(time.time() - start_time))
 
@@ -196,30 +202,31 @@ if __name__ == "__main__":
         help="Cache processed raw data")
 
     parser.add_argument(
-        "-g",
-        "--gamma",
-        action="store",
-        dest="gamma",
-        default=1,
-        type=int,
-        help="Gamma value")
-
-    parser.add_argument(
         "-e",
         "--n-estimator",
         action="store",
         dest="n_estimator",
-        default=180,
+        default=200,
         type=int,
         help="The maximum number of estimators at which boosting is terminated.")
 
     parser.add_argument(
-        "-t",
-        "--learning-rate",
+        "-x",
+        "--max-depth",
         action="store",
-        dest="learning_rate",
-        default=0.1,
-        help="The learning rate for xgboost algorithm.")
+        dest="max_depth",
+        default=3,
+        type=int,
+        help="Max depth param for decision tree.")
+
+    parser.add_argument(
+        "-a",
+        "--algorithm",
+        action="store",
+        dest="algorithm",
+        default="SAMME.R",
+        help="The SAMME.R algorithm typically converges faster than SAMME, achieving a" +
+            " lower test error with fewer boosting iterations.")
 
     args = parser.parse_args()
     main(args)
