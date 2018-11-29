@@ -58,8 +58,8 @@ function clientConnect(formElement) {
             var extra_username = extras[0];
             var extra_processing_time = extras[1];
             var extra_pic_url = extras[2];
-            var extra_male_count = extras[3];
-            var extra_female_count = extras[4];
+            var extra_male_count = parseInt(extras[3]);
+            var extra_female_count = parseInt(extras[4]);
 
             finishProgress();
 
