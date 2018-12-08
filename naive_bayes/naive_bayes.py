@@ -34,11 +34,9 @@ def load_blacklist_words(filename):
     BLACKLIST_WORDS = [x.strip() for x in BLACKLIST_WORDS]
 
 
-def read_file(filename):
+def read_file(filename, data):
     with open(filename, "r", encoding="utf-8") as f:
         file = json.load(f)
-        if str(file["gender"]) == "False":  # Invalid gender
-            return
 
     for _, comment in enumerate(file["comments"]):
         words_in_comment = word_tokenize(comment["text"].lower())
@@ -51,8 +49,6 @@ def read_file(filename):
 
         if valid:
             data.append((file["gender"], comment["text"].lower()))
-
-    shuffle(data)
 
 
 def naive_bayes(cache_model):
@@ -139,32 +135,56 @@ def nb_classify(classifier, text=""):
 def main(args):
     print("Running Naive-Bayes Classifier\n")
 
-    print("Reading blacklist words file")
+    print("Reading blacklist words file\n")
     load_blacklist_words("../data/blacklist.txt")
 
     if args.model != "":
         print("Loading model file: {}\n".format(args.model))
-        classifier = cache.load_model(args.model)
+        classifier = cache.load_pickle(args.model)
     else:
-        filenames = glob.glob("../data/raw_comments/*.json")
-        shuffle(filenames)
+        filenames_male = glob.glob("../data/raw_comments/male/*.json")
+        filenames_female = glob.glob("../data/raw_comments/female/*.json")
+        shuffle(filenames_male)
+        shuffle(filenames_female)
 
-        total = len(filenames)
-        start_progress("Reading {} user(s) data".format(total))
-
-        for index, filename in enumerate(filenames):
-            progress((index + 1) / total * 100)
-            read_file(filename)
-
+        male_data = []
+        male_user = len(filenames_male)
+        start_progress("Reading {} male user(s) data".format(male_user))
+        for index, filename in enumerate(filenames_male):
+            progress((index + 1) / male_user * 100)
+            read_file(filename, male_data)
         end_progress()
 
-        print("\nFinished reading data")
-        print("Total number of user: " + str(len(filenames)))
-        print("Total number of comments: " + str(len(data)) + "\n")
+        female_data = []
+        female_user = len(filenames_female)
+        start_progress("Reading {} female user(s) data".format(female_user))
+        for index, filename in enumerate(filenames_female):
+            progress((index + 1) / female_user * 100)
+            read_file(filename, female_data)
+        end_progress()
 
+        female_ratio = (1.0 - args.male_female_ratio)
+        female_count = int(len(female_data))
+        male_count = int(len(male_data))
+        total_data = male_count + female_count
+        print("Loaded {} male(s) and {} female(s) comment data, total of {} comment(s)".format(male_count, female_count, total_data))
         if args.limit != -1:
-            print("Limiting number of comments: {}".format(args.limit))
-            del data[args.limit:]
+            female_count = int(args.limit * female_ratio)
+            male_count = int(args.limit * args.male_female_ratio)
+            if male_count < len(male_data):
+                del male_data[male_count:]
+            if female_count < len(female_data):
+                del female_data[female_count:]
+            print("Limiting number of comments: {}, {} male(s) and {} female(s)".format(args.limit, len(male_data), len(female_data)))
+
+        global data
+        data = male_data
+        data.extend(female_data)
+        shuffle(data)
+
+        print("\nFinished reading data")
+        print("Total number of user: " + str(len(filenames_female) + len(filenames_male)))
+        print("Total number of comments: " + str(len(data)) + "\n")
 
         classifier = naive_bayes(args.cache_model)
 
@@ -191,6 +211,15 @@ if __name__ == "__main__":
         default="",
         type=str,
         help="Specify model file (pickle format)")
+
+    parser.add_argument(
+        "-r",
+        "--male-female-ratio",
+        action="store",
+        dest="male_female_ratio",
+        default=0.5,
+        type=float,
+        help="Male to female ratio")
 
     parser.add_argument(
         "-c",
