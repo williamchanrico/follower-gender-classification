@@ -1,17 +1,59 @@
-# follower-gender-classifier
+<h1 align="center">Follower Gender Classifier</h1>
 
-Know the gender of your Instagram followers!
+<div align="center">
+  :house_with_garden:
+</div>
+<div align="center">
+  <strong>Know the gender of your followers!</strong>
+</div>
+<div align="center">
+  A <code>project</code> to support my thesis.
+</div>
 
-Consist of 4 parts:
+<br />
 
-- The frontend app built with `socketio, flask, html & javascript`
-- and 3 different implementation of classifier algorithm: support vector machine, naive bayes, and adaboost
+<div align="center">
+  <!-- Stability -->
+  <a href="https://nodejs.org/api/documentation.html#documentation_stability_index">
+    <img src="https://img.shields.io/badge/stability-experimental-orange.svg?style=flat-square"
+      alt="API stability" />
+  </a>
+  <!-- GPL License -->
+  <a href="http://flask.pocoo.org/"><img
+	src="https://badges.frapsoft.com/os/gpl/gpl.png?v=103"
+	border="0"
+	alt="GPL Licence"
+	title="GPL Licence">
+  </a>
+  <!-- Open Source Love -->
+  <a href="http://flask.pocoo.org/"><img
+	src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103"
+	border="0"
+	alt="Open Source Love"
+	title="Open Source Love">
+  </a>
+</div>
+
+<div align="center">
+  <h3>
+    <a href="https://classify.arzhon.id">
+      Demo
+    </a>
+  </h3>
+</div>
+
+## Introduction
+
+The goal is to determine how many of your Instagram follower(s) are male/female.
+
+Consist of several parts:
+
+- The frontend built with `socketio, flask, html & javascript`
+- and 4 different implementation of classifier algorithm: xgboost, support vector machine, naive bayes, and adaboost
 
 ## Screenshot
 
-![screenshot1](screenshots/screenshot01.png?raw=true "Screenshot1")
-
-![screenshot2](screenshots/screenshot02.png?raw=true "Screenshot2")
+![screenshot1](screenshots/screenshot.png?raw=true "Screenshot1")
 
 ## Getting Started
 
