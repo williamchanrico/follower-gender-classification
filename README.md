@@ -9,9 +9,9 @@ Consist of 4 parts:
 
 ## Screenshot
 
-![screenshot1](screenshots/screenshot1.png?raw=true "Screenshot1")
+![screenshot1](screenshots/screenshot01.png?raw=true "Screenshot1")
 
-![screenshot2](screenshots/screenshot2.png?raw=true "Screenshot2")
+![screenshot2](screenshots/screenshot02.png?raw=true "Screenshot2")
 
 ## Getting Started
 
