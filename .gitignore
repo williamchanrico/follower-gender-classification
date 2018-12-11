@@ -106,11 +106,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# folder
-pictures/
-*.jpg
-*.jpeg
-
 # misc
 testing.py
 response back up.zip
