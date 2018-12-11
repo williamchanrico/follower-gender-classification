@@ -53,7 +53,7 @@ Consist of several parts:
 
 ## Screenshot
 
-![screenshot1](screenshots/screenshot.png?raw=true "Screenshot1")
+![screenshot1](screenshots/screenshot.jpg?raw=true "Screenshot1")
 
 ## Getting Started
 
