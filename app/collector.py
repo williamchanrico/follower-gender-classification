@@ -25,7 +25,7 @@ def get_all_followers_comments(client, username, follower_limit=math.inf,
     return all_follower_comments
 
 
-def get_followers_id_list(client, username, limit):
+def get_followers_id_list(client, username, limit=10000):
     """ Returns list of followers' user ID """
     followers = []
 
