@@ -27,15 +27,16 @@ def load_blacklist_words(filename):
     BLACKLIST_WORDS = [x.strip() for x in BLACKLIST_WORDS]
 
 
-def run_tests(data, label, size, split, kernel, gamma, coef):
+def run_tests(data, label, size, split, penalty, kernel, gamma, coef):
     print("\n\nRunning tests")
     print("=============")
     print("Kernel:", kernel)
     print("Gamma:", gamma)
     print("Coef:", coef)
+    print("Penalty:", penalty)
     print("=============\n")
 
-    model = svm.SVC(coef0=coef, kernel=kernel, gamma=gamma)
+    model = svm.SVC(C=penalty, coef0=coef, kernel=kernel, gamma=gamma)
 
     if split > 1:
         print("> Training model using {} data (Cross-validation)".format(size))
@@ -153,7 +154,7 @@ def main(args):
     if args.cache:
         cache.cache_data_and_label(data, label, word_count)
 
-    run_tests(data, label, total, args.split, args.kernel, args.gamma, args.coef)
+    run_tests(data, label, total, args.split, args.penalty, args.kernel, args.gamma, args.coef)
 
     print("Elapsed time: {0:.2f}s".format(time.time() - start_time))
 
@@ -214,6 +215,15 @@ if __name__ == "__main__":
         default=0.1,
         type=float,
         help="Gamma value")
+
+    parser.add_argument(
+        "-p",
+        "--penalty",
+        action="store",
+        dest="penalty",
+        default=1.0,
+        type=float,
+        help="Penalty value")
 
     # Specifies the kernel type to be used in the algorithm
     # Must be one of ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’ or a
