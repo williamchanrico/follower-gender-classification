@@ -4,7 +4,6 @@
 
 import argparse
 import json
-import math
 import random
 import os
 import sys
@@ -36,7 +35,7 @@ def run_tests(data, label, size, split, kernel, gamma, coef):
     print("Coef:", coef)
     print("=============\n")
 
-    model = svm.SVC(C=coef, kernel=kernel, gamma=gamma)
+    model = svm.SVC(coef0=coef, kernel=kernel, gamma=gamma)
 
     if split > 1:
         print("> Training model using {} data (Cross-validation)".format(size))
@@ -203,8 +202,8 @@ if __name__ == "__main__":
         "--coef",
         action="store",
         dest="coef",
-        default=10,
-        type=int,
+        default=0.0,
+        type=float,
         help="Kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’")
 
     parser.add_argument(
@@ -212,8 +211,8 @@ if __name__ == "__main__":
         "--gamma",
         action="store",
         dest="gamma",
-        default=1,
-        type=int,
+        default=0.1,
+        type=float,
         help="Gamma value")
 
     # Specifies the kernel type to be used in the algorithm

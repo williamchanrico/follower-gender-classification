@@ -155,7 +155,7 @@ def main(args):
     if args.cache:
         cache.cache_data_and_label(data, label, word_count)
 
-    run_tests(data, label, total, args.split, args.gamma, args.learning_rate)
+    run_tests(data, label, total, args.split, args.gamma, args.learning_rate, args.n_estimators)
 
     print("Elapsed time: {0:.2f}s".format(time.time() - start_time))
 
@@ -204,8 +204,8 @@ if __name__ == "__main__":
         "--gamma",
         action="store",
         dest="gamma",
-        default=1,
-        type=int,
+        default=0.1,
+        type=float,
         help="Gamma value")
 
     parser.add_argument(
