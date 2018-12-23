@@ -29,16 +29,23 @@ def load_blacklist_words(filename):
     BLACKLIST_WORDS = [x.strip() for x in BLACKLIST_WORDS]
 
 
-def run_tests(data, label, size, split, algorithm="SAMME.R", n_estimator=200, max_depth=3):
+def run_tests(data,
+              label,
+              size,
+              split,
+              algorithm="SAMME.R",
+              n_estimator=200,
+              max_depth=3):
     print("\n\nRunning tests")
     print("=============")
     print("Algorithm:", algorithm)
     print("N Estimator:", n_estimator)
     print("=============\n")
 
-    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth),
-                                    algorithm=algorithm,
-                                    n_estimators=n_estimator)
+    model = AdaBoostClassifier(
+        DecisionTreeClassifier(max_depth=max_depth),
+        algorithm=algorithm,
+        n_estimators=n_estimator)
 
     if split > 1:
         print("> Training model using {} data (Cross-validation)".format(size))
@@ -80,19 +87,23 @@ def main(args):
     female_comment = [[x[0], x[1].lower()] for x in female_comment]
 
     # Filter blacklisted words in comments
-    male_comment = [[x[0], x[1]] for x in male_comment if
-        all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
-    female_comment = [[x[0], x[1]] for x in female_comment if
-        all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
+    male_comment = [[x[0], x[1]] for x in male_comment
+                    if all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
+    female_comment = [[x[0], x[1]] for x in female_comment if all(
+        c not in BLACKLIST_WORDS for c in x[1].split(' '))]
 
     random.shuffle(male_comment)
     random.shuffle(female_comment)
-    print("Loaded {} male and {} female comments".format(len(male_comment), len(female_comment)))
+    print("Loaded {} male and {} female comments".format(
+        len(male_comment), len(female_comment)))
 
     female_ratio = (1.0 - args.male_female_ratio)
     if args.limit != -1:
-        print("Limiting male and female comments to {} male and {} female ({} total)".format(
-            int(args.limit * args.male_female_ratio), int(args.limit * female_ratio), args.limit))
+        print(
+            "Limiting male and female comments to {} male and {} female ({} total)"
+            .format(
+                int(args.limit * args.male_female_ratio),
+                int(args.limit * female_ratio), args.limit))
         try:
             del male_comment[int(args.limit * args.male_female_ratio):]
             del female_comment[int(args.limit * female_ratio):]
@@ -173,7 +184,9 @@ if __name__ == "__main__":
         dest="limit",
         default=-1,
         type=int,
-        help="Limit processed data, default ratio is equal male and female comments")
+        help=
+        "Limit processed data, default ratio is equal male and female comments"
+    )
 
     parser.add_argument(
         "-s",
@@ -208,7 +221,8 @@ if __name__ == "__main__":
         dest="n_estimator",
         default=200,
         type=int,
-        help="The maximum number of estimators at which boosting is terminated.")
+        help="The maximum number of estimators at which boosting is terminated."
+    )
 
     parser.add_argument(
         "-x",
@@ -225,8 +239,9 @@ if __name__ == "__main__":
         action="store",
         dest="algorithm",
         default="SAMME.R",
-        help="The SAMME.R algorithm typically converges faster than SAMME, achieving a" +
-            " lower test error with fewer boosting iterations.")
+        help=
+        "The SAMME.R algorithm typically converges faster than SAMME, achieving a"
+        + " lower test error with fewer boosting iterations.")
 
     args = parser.parse_args()
     main(args)

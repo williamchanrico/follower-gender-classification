@@ -5,7 +5,7 @@ import sys
 
 def start_progress(title):
     global progress_x
-    sys.stdout.write(title + ": [" + "-"*40 + "]" + chr(8)*41)
+    sys.stdout.write(title + ": [" + "-" * 40 + "]" + chr(8) * 41)
     sys.stdout.flush()
 
     progress_x = 0

@@ -2,7 +2,6 @@
 
 import time
 import _pickle as pickle
-
 """
 Processed raw data cache format
 
@@ -39,6 +38,7 @@ def cache_label(label, filename):
     with open(filename, "w") as f:
         for l in label:
             f.write(str(l) + "\n")
+
 
 def cache_model(data, filename):
     print("Saving trained model into {}\n".format(filename))

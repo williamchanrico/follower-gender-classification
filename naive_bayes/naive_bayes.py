@@ -85,26 +85,30 @@ def naive_bayes(cache_model):
     main_gender_classifier = NaiveBayesClassifier.train(train_data_gender)
 
     if cache_model:
-        cache.cache_model(main_gender_classifier, 'model/gender_classifier_{}.p'.format(total))
+        cache.cache_model(main_gender_classifier,
+                          'model/gender_classifier_{}.p'.format(total))
 
     print("Cross validation")
     average_accuracy = 0
     size = len(train_data_gender)
 
     for i in range(1, 9):
-        test_set = train_data_gender[round((i - 1) * size / 8): round((i) * size / 8)]
-        training_set = train_data_gender[0: round((i - 1) * size / 8)]
+        test_set = train_data_gender[round((i - 1) * size / 8):round((i) *
+                                                                     size / 8)]
+        training_set = train_data_gender[0:round((i - 1) * size / 8)]
         training_set.extend(train_data_gender[round((i) * size / 8):])
 
         gender_classifier = NaiveBayesClassifier.train(training_set)
 
-        print("Test-{0}: {1:.2%}".format(i, classify.accuracy(gender_classifier, test_set)))
+        print("Test-{0}: {1:.2%}".format(
+            i, classify.accuracy(gender_classifier, test_set)))
         average_accuracy += classify.accuracy(gender_classifier, test_set)
     average_accuracy /= 8
 
     print("Average accuracy: " + "{0:.2%}\n".format(average_accuracy))
 
     return main_gender_classifier
+
 
 def nb_classify(classifier, text=""):
     text_dict = {}
@@ -167,7 +171,9 @@ def main(args):
         female_count = int(len(female_data))
         male_count = int(len(male_data))
         total_data = male_count + female_count
-        print("Loaded {} male(s) and {} female(s) comment data, total of {} comment(s)".format(male_count, female_count, total_data))
+        print(
+            "Loaded {} male(s) and {} female(s) comment data, total of {} comment(s)"
+            .format(male_count, female_count, total_data))
         if args.limit != -1:
             female_count = int(args.limit * female_ratio)
             male_count = int(args.limit * args.male_female_ratio)
@@ -175,7 +181,9 @@ def main(args):
                 del male_data[male_count:]
             if female_count < len(female_data):
                 del female_data[female_count:]
-            print("Limiting number of comments: {}, {} male(s) and {} female(s)".format(args.limit, len(male_data), len(female_data)))
+            print(
+                "Limiting number of comments: {}, {} male(s) and {} female(s)".
+                format(args.limit, len(male_data), len(female_data)))
 
         global data
         data = male_data
@@ -183,7 +191,8 @@ def main(args):
         shuffle(data)
 
         print("\nFinished reading data")
-        print("Total number of user: " + str(len(filenames_female) + len(filenames_male)))
+        print("Total number of user: " +
+              str(len(filenames_female) + len(filenames_male)))
         print("Total number of comments: " + str(len(data)) + "\n")
 
         classifier = naive_bayes(args.cache_model)
