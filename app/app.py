@@ -19,7 +19,6 @@ from adab import adab
 from svm import svm
 from thirdparty import InstagramAPI as ig
 
-
 client_threads = {}
 app = Flask("Instagram Follower Gender Classifier API")
 socketio = SocketIO(app)
@@ -87,11 +86,11 @@ class ClientThread(Thread):
 
         self.send_status("false", "message", "Getting list of follower(s)")
         follower_id_list = collector.get_followers_id_list(
-            ig_client, self._username, self._follower_limit*10)
+            ig_client, self._username, self._follower_limit * 10)
 
         collected_comments_data = gather_comments(
-            self._client_id, follower_id_list, self._follower_limit, self._media_per_follower_limit,
-            self._comments_per_media_limit)
+            self._client_id, follower_id_list, self._follower_limit,
+            self._media_per_follower_limit, self._comments_per_media_limit)
 
         self.send_status("false", "message",
                          "Running " + self._algorithm + " algorithm")
@@ -117,8 +116,8 @@ def load_classifier(model_file):
     return cache.load_pickle(model_file)
 
 
-def gather_comments(client_id, follower_id_list, follower_limit, media_per_follower_limit,
-                    comments_per_media_limit):
+def gather_comments(client_id, follower_id_list, follower_limit,
+                    media_per_follower_limit, comments_per_media_limit):
     total_follower = len(follower_id_list)
     client_threads[client_id].send_status(
         "false", "data", "Targeting {} follower(s)".format(total_follower))
@@ -146,8 +145,8 @@ def gather_comments(client_id, follower_id_list, follower_limit, media_per_follo
 
             client_threads[client_id].send_status(
                 "false", "message", "Gathering comment ",
-                "follower: " + str(follower_count) + "/" + str(total_follower) +
-                " " + "media: " + str(media_idx) + "/" + str(total_media))
+                "follower: " + str(follower_count) + "/" + str(total_follower)
+                + " " + "media: " + str(media_idx) + "/" + str(total_media))
 
         if len(follower_comments) > 0:
             print("No comments, skipping follower")
@@ -429,4 +428,3 @@ if __name__ == "__main__":
     print("Generated secret key:", app.config["SECRET_KEY"])
 
     main(args)
-

@@ -6,17 +6,22 @@ import math
 import random
 
 
-def get_all_followers_comments(client, username, follower_limit=math.inf,
-    media_per_follower_limit=25, comments_per_media_limit=250):
+def get_all_followers_comments(client,
+                               username,
+                               follower_limit=math.inf,
+                               media_per_follower_limit=25,
+                               comments_per_media_limit=250):
     all_follower_comments = []
     followers = get_followers_id_list(client, username, follower_limit)
 
     for follower in followers:
         follower_comments = []
 
-        all_media_id = get_all_media_id(client, follower, media_per_follower_limit)
+        all_media_id = get_all_media_id(client, follower,
+                                        media_per_follower_limit)
         for media_id in all_media_id:
-            media_comments = get_media_comments(client, media_id, comments_per_media_limit)
+            media_comments = get_media_comments(client, media_id,
+                                                comments_per_media_limit)
             follower_comments.extend(media_comments)
 
         all_follower_comments.append(follower_comments)
@@ -36,7 +41,7 @@ def get_followers_id_list(client, username, limit=10000):
         client.getUserFollowers(user_id, maxid=next_max_id)
 
         data = filter(lambda x: x['is_private'] == False,
-            client.LastJson.get('users', []))
+                      client.LastJson.get('users', []))
         data = map(lambda x: x['pk'], data)
         followers.extend(data)
 

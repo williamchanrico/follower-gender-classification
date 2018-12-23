@@ -77,19 +77,23 @@ def main(args):
     female_comment = [[x[0], x[1].lower()] for x in female_comment]
 
     # Filter blacklisted words in comments
-    male_comment = [[x[0], x[1]] for x in male_comment if
-        all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
-    female_comment = [[x[0], x[1]] for x in female_comment if
-        all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
+    male_comment = [[x[0], x[1]] for x in male_comment
+                    if all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
+    female_comment = [[x[0], x[1]] for x in female_comment if all(
+        c not in BLACKLIST_WORDS for c in x[1].split(' '))]
 
     random.shuffle(male_comment)
     random.shuffle(female_comment)
-    print("Loaded {} male and {} female comments".format(len(male_comment), len(female_comment)))
+    print("Loaded {} male and {} female comments".format(
+        len(male_comment), len(female_comment)))
 
     female_ratio = (1.0 - args.male_female_ratio)
     if args.limit != -1:
-        print("Limiting male and female comments to {} male and {} female ({} total)".format(
-            int(args.limit * args.male_female_ratio), int(args.limit * female_ratio), args.limit))
+        print(
+            "Limiting male and female comments to {} male and {} female ({} total)"
+            .format(
+                int(args.limit * args.male_female_ratio),
+                int(args.limit * female_ratio), args.limit))
         try:
             del male_comment[int(args.limit * args.male_female_ratio):]
             del female_comment[int(args.limit * female_ratio):]
@@ -154,7 +158,8 @@ def main(args):
     if args.cache:
         cache.cache_data_and_label(data, label, word_count)
 
-    run_tests(data, label, total, args.split, args.penalty, args.kernel, args.gamma, args.coef)
+    run_tests(data, label, total, args.split, args.penalty, args.kernel,
+              args.gamma, args.coef)
 
     print("Elapsed time: {0:.2f}s".format(time.time() - start_time))
 

@@ -29,7 +29,13 @@ def load_blacklist_words(filename):
     BLACKLIST_WORDS = [x.strip() for x in BLACKLIST_WORDS]
 
 
-def run_tests(data, label, size, split=1, gamma=1, learning_rate=0.1, n_estimators=180):
+def run_tests(data,
+              label,
+              size,
+              split=1,
+              gamma=1,
+              learning_rate=0.1,
+              n_estimators=180):
     print("\n\nRunning tests")
     print("=============")
     print("Gamma: {}".format(gamma))
@@ -37,7 +43,8 @@ def run_tests(data, label, size, split=1, gamma=1, learning_rate=0.1, n_estimato
     print("N Estimator: {}".format(n_estimators))
     print("=============\n")
 
-    model = xgboost.XGBClassifier(gamma=gamma, learning_rate=learning_rate, n_estimators=n_estimators)
+    model = xgboost.XGBClassifier(
+        gamma=gamma, learning_rate=learning_rate, n_estimators=n_estimators)
 
     if split > 1:
         print("> Training model using {} data (Cross-validation)".format(size))
@@ -78,19 +85,23 @@ def main(args):
     female_comment = [[x[0], x[1].lower()] for x in female_comment]
 
     # Filter blacklisted words in comments
-    male_comment = [[x[0], x[1]] for x in male_comment if
-        all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
-    female_comment = [[x[0], x[1]] for x in female_comment if
-        all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
+    male_comment = [[x[0], x[1]] for x in male_comment
+                    if all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
+    female_comment = [[x[0], x[1]] for x in female_comment if all(
+        c not in BLACKLIST_WORDS for c in x[1].split(' '))]
 
     random.shuffle(male_comment)
     random.shuffle(female_comment)
-    print("Loaded {} male and {} female comments".format(len(male_comment), len(female_comment)))
+    print("Loaded {} male and {} female comments".format(
+        len(male_comment), len(female_comment)))
 
     female_ratio = (1.0 - args.male_female_ratio)
     if args.limit != -1:
-        print("Limiting male and female comments to {} male and {} female ({} total)".format(
-            int(args.limit * args.male_female_ratio), int(args.limit * female_ratio), args.limit))
+        print(
+            "Limiting male and female comments to {} male and {} female ({} total)"
+            .format(
+                int(args.limit * args.male_female_ratio),
+                int(args.limit * female_ratio), args.limit))
         try:
             del male_comment[int(args.limit * args.male_female_ratio):]
             del female_comment[int(args.limit * female_ratio):]
@@ -155,7 +166,8 @@ def main(args):
     if args.cache:
         cache.cache_data_and_label(data, label, word_count)
 
-    run_tests(data, label, total, args.split, args.gamma, args.learning_rate, args.n_estimators)
+    run_tests(data, label, total, args.split, args.gamma, args.learning_rate,
+              args.n_estimators)
 
     print("Elapsed time: {0:.2f}s".format(time.time() - start_time))
 
@@ -171,7 +183,9 @@ if __name__ == "__main__":
         dest="limit",
         default=-1,
         type=int,
-        help="Limit processed data, default ratio is equal male and female comments")
+        help=
+        "Limit processed data, default ratio is equal male and female comments"
+    )
 
     parser.add_argument(
         "-s",
@@ -215,7 +229,8 @@ if __name__ == "__main__":
         dest="n_estimator",
         default=180,
         type=int,
-        help="The maximum number of estimators at which boosting is terminated.")
+        help="The maximum number of estimators at which boosting is terminated."
+    )
 
     parser.add_argument(
         "-t",
