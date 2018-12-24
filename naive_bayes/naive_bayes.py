@@ -6,6 +6,7 @@ import glob
 import io
 import json
 import os
+import string
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from random import shuffle
@@ -39,7 +40,8 @@ def read_file(filename, data):
         file = json.load(f)
 
     for _, comment in enumerate(file["comments"]):
-        words_in_comment = word_tokenize(comment["text"].lower())
+        words_in_comment = comment["text"].lower().translate(
+            str.maketrans('', '', string.punctuation))
 
         valid = True
         for word in BLACKLIST_WORDS:
