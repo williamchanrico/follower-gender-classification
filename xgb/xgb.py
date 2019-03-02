@@ -226,7 +226,7 @@ if __name__ == "__main__":
         "-e",
         "--n-estimator",
         action="store",
-        dest="n_estimator",
+        dest="n_estimators",
         default=180,
         type=int,
         help="The maximum number of estimators at which boosting is terminated."
