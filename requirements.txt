@@ -8,7 +8,7 @@ Flask==1.0.2
 Flask-SocketIO==3.0.2
 idna==2.7
 itsdangerous==1.1.0
-Jinja2==2.10
+Jinja2>=2.10.1
 MarkupSafe==1.1.0
 nltk==3.4
 numpy==1.15.4
