@@ -14,7 +14,7 @@ nltk==3.4
 numpy==1.15.4
 pycparser==2.19
 pyOpenSSL==18.0.0
-python-engineio==2.3.2
+python-engineio==3.8.2.post1
 python-socketio==2.0.0
 requests==2.20.1
 requests-toolbelt==0.8.0
