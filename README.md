@@ -51,6 +51,40 @@ Consist of several parts:
 - The frontend built with `socketio, flask, html & javascript`
 - and 4 different implementation of classifier algorithm: xgboost, support vector machine, naive bayes, and adaboost
 
+## Quick Repository Overview
+
+> [adab/](./adab/)
+
+Implementing AdaBoost using `sklearn` library.
+
+> [app/](./app/)
+
+Main entrypoint for the Flask application (this project).
+
+> [data/](./data/)
+
+Data dump(s) or saved pickle files.
+
+> [screenshots/](./screenshots/)
+
+You know... screenshots.
+
+> [naive_bayes/](./naive_bayes/)
+
+Implementing naive bayes algorithm using `nltk` library.
+
+> [svm](./svm)
+
+Implementing Support Vector Machine algorithm using `sklearn` library.
+
+> [thirdparty/](./thirdparty/)
+
+Third-party related library supporting this project.
+
+> [xgb](./xgb)
+
+Implementing eXtreme gradient boosting algorithm using `xgboost` library.
+
 ## Screenshot
 
 ![screenshot1](screenshots/screenshot.jpg?raw=true "Screenshot1")
