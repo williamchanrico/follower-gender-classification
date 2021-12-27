@@ -27,6 +27,7 @@ import math
 import random
 import os
 import sys
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import time
 
@@ -48,13 +49,7 @@ def load_blacklist_words(filename):
     BLACKLIST_WORDS = [x.strip() for x in BLACKLIST_WORDS]
 
 
-def run_tests(data,
-              label,
-              size,
-              split=1,
-              gamma=1,
-              learning_rate=0.1,
-              n_estimators=180):
+def run_tests(data, label, size, split=1, gamma=1, learning_rate=0.1, n_estimators=180):
     print("\n\nRunning tests")
     print("=============")
     print("Gamma: {}".format(gamma))
@@ -62,8 +57,7 @@ def run_tests(data,
     print("N Estimator: {}".format(n_estimators))
     print("=============\n")
 
-    model = xgboost.XGBClassifier(
-        gamma=gamma, learning_rate=learning_rate, n_estimators=n_estimators)
+    model = xgboost.XGBClassifier(gamma=gamma, learning_rate=learning_rate, n_estimators=n_estimators)
 
     if split > 1:
         print("> Training model using {} data (Cross-validation)".format(size))
@@ -94,9 +88,9 @@ def main(args):
     load_blacklist_words("../data/blacklist.txt")
 
     print("Reading raw gender-comment data")
-    with open('../data/male-comments.json', 'r') as f:
+    with open("../data/male-comments.json", "r") as f:
         male_comment = json.load(f)
-    with open('../data/female-comments.json', 'r') as f:
+    with open("../data/female-comments.json", "r") as f:
         female_comment = json.load(f)
 
     # Lower case all comments
@@ -104,26 +98,19 @@ def main(args):
     female_comment = [[x[0], x[1].lower()] for x in female_comment]
 
     # Filter blacklisted words in comments
-    male_comment = [[x[0], x[1]] for x in male_comment
-                    if all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
-    female_comment = [[x[0], x[1]] for x in female_comment if all(
-        c not in BLACKLIST_WORDS for c in x[1].split(' '))]
+    male_comment = [[x[0], x[1]] for x in male_comment if all(c not in BLACKLIST_WORDS for c in x[1].split(" "))]
+    female_comment = [[x[0], x[1]] for x in female_comment if all(c not in BLACKLIST_WORDS for c in x[1].split(" "))]
 
     random.shuffle(male_comment)
     random.shuffle(female_comment)
-    print("Loaded {} male and {} female comments".format(
-        len(male_comment), len(female_comment)))
+    print("Loaded {} male and {} female comments".format(len(male_comment), len(female_comment)))
 
-    female_ratio = (1.0 - args.male_female_ratio)
+    female_ratio = 1.0 - args.male_female_ratio
     if args.limit != -1:
-        print(
-            "Limiting male and female comments to {} male and {} female ({} total)"
-            .format(
-                int(args.limit * args.male_female_ratio),
-                int(args.limit * female_ratio), args.limit))
+        print("Limiting male and female comments to {} male and {} female ({} total)".format(int(args.limit * args.male_female_ratio), int(args.limit * female_ratio), args.limit))
         try:
-            del male_comment[int(args.limit * args.male_female_ratio):]
-            del female_comment[int(args.limit * female_ratio):]
+            del male_comment[int(args.limit * args.male_female_ratio) :]
+            del female_comment[int(args.limit * female_ratio) :]
         except:
             print("Not enough male/female comments data")
             sys.exit(1)
@@ -139,7 +126,7 @@ def main(args):
 
     list_of_words = set()
     for data in gender_comment:
-        list_of_words.update(data[1].split(' '))
+        list_of_words.update(data[1].split(" "))
     list_of_words = list(list_of_words)
     word_count = len(list_of_words)
 
@@ -153,7 +140,7 @@ def main(args):
     total = len(gender_comment)
     start_progress("Processing {} raw gender-comment data".format(total))
     for i, j in enumerate(gender_comment):
-        if j[0] == 'female':  # Label for female = 0, and male = 1
+        if j[0] == "female":  # Label for female = 0, and male = 1
             label.append(0)
         else:
             label.append(1)
@@ -185,79 +172,28 @@ def main(args):
     if args.cache:
         cache.cache_data_and_label(data, label, word_count)
 
-    run_tests(data, label, total, args.split, args.gamma, args.learning_rate,
-              args.n_estimators)
+    run_tests(data, label, total, args.split, args.gamma, args.learning_rate, args.n_estimators)
 
     print("Elapsed time: {0:.2f}s".format(time.time() - start_time))
 
 
 if __name__ == "__main__":
-    """ This is executed when run from the command line """
+    """This is executed when run from the command line"""
     parser = argparse.ArgumentParser()
 
-    parser.add_argument(
-        "-l",
-        "--limit",
-        action="store",
-        dest="limit",
-        default=-1,
-        type=int,
-        help=
-        "Limit processed data, default ratio is equal male and female comments"
-    )
+    parser.add_argument("-l", "--limit", action="store", dest="limit", default=-1, type=int, help="Limit processed data, default ratio is equal male and female comments")
 
-    parser.add_argument(
-        "-s",
-        "--split",
-        action="store",
-        dest="split",
-        default=1,
-        type=int,
-        help="Split test and training data, cross-validation")
+    parser.add_argument("-s", "--split", action="store", dest="split", default=1, type=int, help="Split test and training data, cross-validation")
 
-    parser.add_argument(
-        "-r",
-        "--male-female-ratio",
-        action="store",
-        dest="male_female_ratio",
-        default=0.5,
-        type=float,
-        help="Male to female ratio")
+    parser.add_argument("-r", "--male-female-ratio", action="store", dest="male_female_ratio", default=0.5, type=float, help="Male to female ratio")
 
-    parser.add_argument(
-        "-c",
-        "--cache",
-        action="store_true",
-        dest="cache",
-        default=False,
-        help="Cache processed raw data")
+    parser.add_argument("-c", "--cache", action="store_true", dest="cache", default=False, help="Cache processed raw data")
 
-    parser.add_argument(
-        "-g",
-        "--gamma",
-        action="store",
-        dest="gamma",
-        default=0.1,
-        type=float,
-        help="Gamma value")
+    parser.add_argument("-g", "--gamma", action="store", dest="gamma", default=0.1, type=float, help="Gamma value")
 
-    parser.add_argument(
-        "-e",
-        "--n-estimator",
-        action="store",
-        dest="n_estimators",
-        default=180,
-        type=int,
-        help="The maximum number of estimators at which boosting is terminated."
-    )
+    parser.add_argument("-e", "--n-estimator", action="store", dest="n_estimators", default=180, type=int, help="The maximum number of estimators at which boosting is terminated.")
 
-    parser.add_argument(
-        "-t",
-        "--learning-rate",
-        action="store",
-        dest="learning_rate",
-        default=0.1,
-        help="The learning rate for xgboost algorithm.")
+    parser.add_argument("-t", "--learning-rate", action="store", dest="learning_rate", default=0.1, help="The learning rate for xgboost algorithm.")
 
     args = parser.parse_args()
     main(args)

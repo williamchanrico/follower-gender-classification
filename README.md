@@ -7,67 +7,79 @@
   <strong>Know the gender of your followers!</strong>
 </div>
 <div align="center">
-  A <code>project</code> to support my thesis.
+	A quick <code>hack</code> to support my short text classification <a href="https://www.sciencedirect.com/science/article/pii/S1877050919310609?via%3Dihub">thesis</a>. This code is not polished nor maintained!
 </div>
 
 <br />
 
 <div align="center">
   <!-- Stability -->
-  <a href="https://nodejs.org/api/documentation.html#documentation_stability_index">
-    <img src="https://img.shields.io/badge/stability-experimental-orange.svg?style=flat-square"
-      alt="API stability" />
+  <a href="https://github.com/williamchanrico/follower-gender-classification"> <img
+	src="https://img.shields.io/badge/stability-experimental-orange.svg?style=flat-square&label=Stability&color=red"
+	alt="API stability" />
   </a>
   <!-- GPL License -->
-  <a href="http://flask.pocoo.org/"><img
-	src="https://badges.frapsoft.com/os/gpl/gpl.png?v=103"
+  <a href="https://github.com/williamchanrico/follower-gender-classification/blob/master/LICENSE"><img
+	src="https://img.shields.io/github/license/williamchanrico/follower-gender-classification?style=flat-square&label=License&color=yellow"
 	border="0"
 	alt="GPL Licence"
 	title="GPL Licence">
   </a>
-  <!-- Open Source Love -->
-  <a href="http://flask.pocoo.org/"><img
-	src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103"
+  <!-- Docker -->
+  <a href="https://hub.docker.com/repository/docker/williamchanrico/follower-gender-classification"><img
+	src="https://img.shields.io/docker/v/williamchanrico/follower-gender-classification?color=blue&label=Docker&style=flat-square"
 	border="0"
-	alt="Open Source Love"
-	title="Open Source Love">
+	alt="Docker"
+	title="Docker">
   </a>
 </div>
 
 <div align="center">
   <h3>
     <a href="https://classify.arzhon.id">
-      Demo
+      Demo (temporary)
     </a>
   </h3>
 </div>
 
-## Introduction
+# Introduction
 
-The goal is to determine how many of your Instagram follower(s) are male/female.
+![screenshot1](screenshots/screenshot.jpg?raw=true "Screenshot1")
 
-Consist of several parts:
+### Goal
 
-- The frontend built with `socketio, flask, html & javascript`
-- and 4 different implementation of classifier algorithm: xgboost, support vector machine, naive bayes, and adaboost
+The goal of this code demo is to **predict gender of social media users based on comments section on Instagram profile** by using AdaBoost, XGBoost, Support Vector Machine, and Naive Bayes Classifier combined with a grid search and K- Fold validation.
 
-## Quick Repository Overview
+How many are males vs females?
+
+We collect `comments` against followers' Instagram picture media `posts` and format them as bag-of-words along with other pre-processing.
+
+### Data Labelling
+
+To label the data that was used to train the model, we use [Azure FaceAPI](https://azure.microsoft.com/en-us/services/cognitive-services/face/#overview) to filter pictures where there's only one person and is able to detect their gender.
+
+# Overview
+
+The code demo consists of several parts:
+
+- The **frontend** built with `socketio, flask, html & javascript`,
+- and 4 different implementations of classifier algorithm: xgboost, support vector machine, naive bayes, and adaboost.
 
 > [adab/](./adab/)
 
 Implementing AdaBoost using `sklearn` library.
 
-> [app/](./app/)
+> [app.py](./app.py)
 
 Main entrypoint for the Flask application (this project).
 
 > [data/](./data/)
 
-Data dump(s) or saved pickle files.
+Data dump(s) or saved pickle files (cache, models, etc.).
 
 > [screenshots/](./screenshots/)
 
-You know... screenshots.
+Screenshots.
 
 > [naive_bayes/](./naive_bayes/)
 
@@ -85,65 +97,38 @@ Third-party related library supporting this project.
 
 Implementing eXtreme gradient boosting algorithm using `xgboost` library.
 
-## Screenshot
+# Getting Started
 
-![screenshot1](screenshots/screenshot.jpg?raw=true "Screenshot1")
+The config is simply loaded by app.py via [decouple](https://github.com/henriquebastos/python-decouple#env-file) package, keeping things simple.
 
-## Getting Started
+Run `cp .env.example .env` and fill the necessary variables.
 
-```sh
-export IG_USERNAME=
-export IG_PASSWORD=
+## Docker
 
-# To limit the number of processed comments data:
-#   follower_limit x media_per_follower x comments_per_media
-#
-# Defaults to 5000
-export COMPUTE_THRESHOLD=
 ```
+docker run --env-file=.env -p 9000:9000 williamchanrico/follower-gender-classification:v0.1.0
+```
+
+## Manual
 
 Assuming you have `virtualenv` and `python3-pip` installed:
 
 - `virtualenv venv && source venv/bin/activate`
 - `pip3 install -r requirements.txt`
-- Get into python3 interactive mode and run:
-```
-Python 3.5.2 (default, Nov 12 2018, 13:43:14)
-[GCC 5.4.0 20160609] on linux
-Type "help", "copyright", "credits" or "license" for more information.
->>> import nltk
->>> nltk.download('punkt')
-[nltk_data] Downloading package punkt to /home/william/nltk_data...
-[nltk_data]   Unzipping tokenizers/punkt.zip.
-True
-```
-- `cd app && python3 app.py`
+- `python -m nltk.downloader punkt`
+- Optionally, you may need `libgomp1` depending on your operating system (required by xgboost)
 
-```
-$ python3 app.py -h
-usage: app.py [-h] [-p PORT] [-o HOST] [-d] [-e ENV] [-s SECRET]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -p PORT, --port PORT  specifies the port to listen on
-  -o HOST, --host HOST  specifies the interface address to listen on
-  -d, --debug           specifies the debug mode
-  -e ENV, --env ENV     specifies the env for flask to run
-  -s SECRET, --secret SECRET
-                        specifies the session secret key
+```sh
+python3 app.py
 ```
 
-## Python Version
+# Python Version
 
 ```
 $ python --version
 Python 3.7.1
 ```
 
-## Contributing
+# License
 
-Pull requests for new features, bug fixes, and suggestions are welcome!
-
-## License
-
-[GNU General Public License v3.0](https://github.com/williamchanrico/follower-gender-classification/blob/master/LICENSE.md)
+[GNU General Public License v3.0](https://github.com/williamchanrico/follower-gender-classification/blob/master/LICENSE)
