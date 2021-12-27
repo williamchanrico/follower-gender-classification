@@ -27,6 +27,7 @@ import math
 import random
 import os
 import sys
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import time
 
@@ -48,23 +49,14 @@ def load_blacklist_words(filename):
     BLACKLIST_WORDS = [x.strip() for x in BLACKLIST_WORDS]
 
 
-def run_tests(data,
-              label,
-              size,
-              split,
-              algorithm="SAMME.R",
-              n_estimator=200,
-              max_depth=3):
+def run_tests(data, label, size, split, algorithm="SAMME.R", n_estimator=200, max_depth=3):
     print("\n\nRunning tests")
     print("=============")
     print("Algorithm:", algorithm)
     print("N Estimator:", n_estimator)
     print("=============\n")
 
-    model = AdaBoostClassifier(
-        DecisionTreeClassifier(max_depth=max_depth),
-        algorithm=algorithm,
-        n_estimators=n_estimator)
+    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), algorithm=algorithm, n_estimators=n_estimator)
 
     if split > 1:
         print("> Training model using {} data (Cross-validation)".format(size))
@@ -96,9 +88,9 @@ def main(args):
     load_blacklist_words("../data/blacklist.txt")
 
     print("Reading raw gender-comment data")
-    with open('../data/male-comments.json', 'r') as f:
+    with open("../data/male-comments.json", "r") as f:
         male_comment = json.load(f)
-    with open('../data/female-comments.json', 'r') as f:
+    with open("../data/female-comments.json", "r") as f:
         female_comment = json.load(f)
 
     # Lower case all comments
@@ -106,26 +98,19 @@ def main(args):
     female_comment = [[x[0], x[1].lower()] for x in female_comment]
 
     # Filter blacklisted words in comments
-    male_comment = [[x[0], x[1]] for x in male_comment
-                    if all(c not in BLACKLIST_WORDS for c in x[1].split(' '))]
-    female_comment = [[x[0], x[1]] for x in female_comment if all(
-        c not in BLACKLIST_WORDS for c in x[1].split(' '))]
+    male_comment = [[x[0], x[1]] for x in male_comment if all(c not in BLACKLIST_WORDS for c in x[1].split(" "))]
+    female_comment = [[x[0], x[1]] for x in female_comment if all(c not in BLACKLIST_WORDS for c in x[1].split(" "))]
 
     random.shuffle(male_comment)
     random.shuffle(female_comment)
-    print("Loaded {} male and {} female comments".format(
-        len(male_comment), len(female_comment)))
+    print("Loaded {} male and {} female comments".format(len(male_comment), len(female_comment)))
 
-    female_ratio = (1.0 - args.male_female_ratio)
+    female_ratio = 1.0 - args.male_female_ratio
     if args.limit != -1:
-        print(
-            "Limiting male and female comments to {} male and {} female ({} total)"
-            .format(
-                int(args.limit * args.male_female_ratio),
-                int(args.limit * female_ratio), args.limit))
+        print("Limiting male and female comments to {} male and {} female ({} total)".format(int(args.limit * args.male_female_ratio), int(args.limit * female_ratio), args.limit))
         try:
-            del male_comment[int(args.limit * args.male_female_ratio):]
-            del female_comment[int(args.limit * female_ratio):]
+            del male_comment[int(args.limit * args.male_female_ratio) :]
+            del female_comment[int(args.limit * female_ratio) :]
         except:
             print("Not enough male/female comments data")
             sys.exit(1)
@@ -141,7 +126,7 @@ def main(args):
 
     list_of_words = set()
     for data in gender_comment:
-        list_of_words.update(data[1].split(' '))
+        list_of_words.update(data[1].split(" "))
     list_of_words = list(list_of_words)
     word_count = len(list_of_words)
 
@@ -155,7 +140,7 @@ def main(args):
     total = len(gender_comment)
     start_progress("Processing {} raw gender-comment data".format(total))
     for i, j in enumerate(gender_comment):
-        if j[0] == 'female':  # Label for female = 0, and male = 1
+        if j[0] == "female":  # Label for female = 0, and male = 1
             label.append(0)
         else:
             label.append(1)
@@ -193,64 +178,20 @@ def main(args):
 
 
 if __name__ == "__main__":
-    """ This is executed when run from the command line """
+    """This is executed when run from the command line"""
     parser = argparse.ArgumentParser()
 
-    parser.add_argument(
-        "-l",
-        "--limit",
-        action="store",
-        dest="limit",
-        default=-1,
-        type=int,
-        help=
-        "Limit processed data, default ratio is equal male and female comments"
-    )
+    parser.add_argument("-l", "--limit", action="store", dest="limit", default=-1, type=int, help="Limit processed data, default ratio is equal male and female comments")
 
-    parser.add_argument(
-        "-s",
-        "--split",
-        action="store",
-        dest="split",
-        default=1,
-        type=int,
-        help="Split test and training data, cross-validation")
+    parser.add_argument("-s", "--split", action="store", dest="split", default=1, type=int, help="Split test and training data, cross-validation")
 
-    parser.add_argument(
-        "-r",
-        "--male-female-ratio",
-        action="store",
-        dest="male_female_ratio",
-        default=0.5,
-        type=float,
-        help="Male to female ratio")
+    parser.add_argument("-r", "--male-female-ratio", action="store", dest="male_female_ratio", default=0.5, type=float, help="Male to female ratio")
 
-    parser.add_argument(
-        "-c",
-        "--cache",
-        action="store_true",
-        dest="cache",
-        default=False,
-        help="Cache processed raw data")
+    parser.add_argument("-c", "--cache", action="store_true", dest="cache", default=False, help="Cache processed raw data")
 
-    parser.add_argument(
-        "-e",
-        "--n-estimator",
-        action="store",
-        dest="n_estimator",
-        default=200,
-        type=int,
-        help="The maximum number of estimators at which boosting is terminated."
-    )
+    parser.add_argument("-e", "--n-estimator", action="store", dest="n_estimator", default=200, type=int, help="The maximum number of estimators at which boosting is terminated.")
 
-    parser.add_argument(
-        "-x",
-        "--max-depth",
-        action="store",
-        dest="max_depth",
-        default=3,
-        type=int,
-        help="Max depth param for decision tree.")
+    parser.add_argument("-x", "--max-depth", action="store", dest="max_depth", default=3, type=int, help="Max depth param for decision tree.")
 
     parser.add_argument(
         "-a",
@@ -258,9 +199,8 @@ if __name__ == "__main__":
         action="store",
         dest="algorithm",
         default="SAMME.R",
-        help=
-        "The SAMME.R algorithm typically converges faster than SAMME, achieving a"
-        + " lower test error with fewer boosting iterations.")
+        help="The SAMME.R algorithm typically converges faster than SAMME, achieving a" + " lower test error with fewer boosting iterations.",
+    )
 
     args = parser.parse_args()
     main(args)
