@@ -91,3 +91,8 @@ venv/
 */*.swp
 */*/*.swp
 */*/*/*.swp
+
+# Raw Follower Gender Classification data
+data/raw_comments
+data/all-gender-comments.json
+data/list-of-words-90670.p

@@ -29,7 +29,9 @@ from collections import Counter
 from scipy.sparse import coo_matrix, vstack
 from flask_socketio import SocketIO
 from flask import Flask, render_template, request
+from flask_wtf.csrf import CSRFProtect
 from decouple import config
+import requests
 
 import cache
 import collector
@@ -44,6 +46,8 @@ from thirdparty import InstagramAPI as ig
 client_threads = {}
 app = Flask("Instagram Follower Gender Classifier API", template_folder="./templates", static_folder="./static")
 socketio = SocketIO(app)
+csrf = CSRFProtect()
+csrf.init_app(app)
 
 main_model = {}
 list_of_words = {}
@@ -53,6 +57,7 @@ BLACKLIST_WORDS = []
 
 
 def load_blacklist_words(filename):
+    """ Load blacklisted words to filter list of words """
     global BLACKLIST_WORDS
     with open(filename) as f:
         BLACKLIST_WORDS = f.readlines()
@@ -64,7 +69,7 @@ class ClientThread(Thread):
         self._client_id = client_id
         super().__init__()
 
-    def setData(self, algorithm, username, follower_limit, media_per_follower_limit, comments_per_media_limit):
+    def set_data(self, algorithm, username, follower_limit, media_per_follower_limit, comments_per_media_limit):
         self._algorithm = algorithm
         self._username = username
         self._follower_limit = int(follower_limit)
@@ -83,6 +88,7 @@ class ClientThread(Thread):
         self.send_status("false", "message", "Getting basic info on {}".format(self._username))
         try:
             userdata = collector.get_user_data(ig_client, self._username)
+            userdata["hd_profile_pic_url_base64"] = b64encode(requests.get(str(userdata["hd_profile_pic_url_info"]["url"])).content).decode("utf-8")
             time.sleep(1)
         except BaseException:
             self.send_status("true", "error", "danger", "User {} not found!".format(self._username))
@@ -115,7 +121,7 @@ class ClientThread(Thread):
             + ","
             + "{0:.2f}s".format(time.time() - start_time)
             + ","
-            + str(userdata["hd_profile_pic_url_info"]["url"])
+            + userdata["hd_profile_pic_url_base64"]
             + ","
             + str(male)
             + ","
@@ -287,7 +293,7 @@ def compute(client_id, algorithm, username, follower_limit, media_per_follower_l
     global client_threads
     print("New compute request about '" + username + "' using: " + algorithm + " algorithm, from " + client_id)
 
-    client_threads[client_id].setData(algorithm, username, follower_limit, media_per_follower_limit, comments_per_media_limit)
+    client_threads[client_id].set_data(algorithm, username, follower_limit, media_per_follower_limit, comments_per_media_limit)
     client_threads[client_id].start()
 
 
@@ -361,9 +367,9 @@ if __name__ == "__main__":
     app.config["ENV"] = args["FGC_FLASK_ENV"]
     app.config["DEBUG"] = args["FGC_FLASK_DEBUG"]
     if args["FGC_FLASK_SESSION_SECRET"] == "":
-        app.config["FGC_FLASK_SESSION_SECRET_KEY"] = b64encode(os.urandom(16)).decode("utf-8")
-        print("Generated secret key:", app.config["FGC_FLASK_SESSION_SECRET_KEY"])
+        app.config["SECRET_KEY"] = b64encode(os.urandom(16)).decode("utf-8")
+        print("Generated session secret:", app.config["SECRET_KEY"])
     else:
-        app.config["FGC_FLASK_SESSION_SECRET_KEY"] = args["FGC_FLASK_SESSION_SECRET"]
+        app.config["SECRET_KEY"] = args["FGC_FLASK_SESSION_SECRET"]
 
     main()

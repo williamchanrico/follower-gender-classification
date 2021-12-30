@@ -9,11 +9,11 @@
 {% block content %}
     <div class="card">
         <div class="card-header">
-            Instagram Follower Gender Classifier
+            Instagram Follower Gender Classification
         </div>
         <div class="card-body">
             <div id="alert-placeholder"></div>
-            <form id="classify-form" action="/classify" method="POST">
+            <form id="classify-form" method="POST">
                 <div class="form-row align-items-center">
                     <div class="form-group col-md-6">
                         <label class="sr-only" for="inline-form-input-group-username">Username</label>
@@ -58,6 +58,7 @@
                         <button type="submit" class="btn btn-primary" id="submit-button">Submit</button>
                     </div>
                 </div>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             </form>
         </div>
 
@@ -166,7 +167,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 {% endblock %}
 
