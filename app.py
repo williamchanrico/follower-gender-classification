@@ -43,16 +43,24 @@ from adab import adab
 from svm import svm
 from thirdparty import InstagramAPI as ig
 
+# The client_threads dictionary contains running threads that is serving a user request.
+# Each key in this dict represents a thread, with the key being the user client_id.
 client_threads = {}
+
+# Initialize Flask and SocketIO.
 app = Flask("Instagram Follower Gender Classifier API", template_folder="./templates", static_folder="./static")
 socketio = SocketIO(app)
 csrf = CSRFProtect()
 csrf.init_app(app)
 
-main_model = {}
-list_of_words = {}
-main_classifier = {}
+# Trained pickle data.
+TRAINED_CLASSIFIER_MODELS = {}
+TRAINED_CLASSIFIER_MODEL_LIST_OF_WORDS = {}
 
+# Contains different types of imported classify functions.
+CLASSIFIER_FUNC = {}
+
+# Contains blacklisted words that we exclude from comments list of words.
 BLACKLIST_WORDS = []
 
 
@@ -234,7 +242,7 @@ def classify(client_id, algorithm, data):
             possible_male = 0
             possible_female = 0
             for comment in follower:
-                if main_classifier[algorithm](main_model[algorithm], comment) == 0:
+                if CLASSIFIER_FUNC[algorithm](TRAINED_CLASSIFIER_MODELS[algorithm], comment) == 0:
                     possible_female += 1
                 else:
                     possible_male += 1
@@ -245,12 +253,12 @@ def classify(client_id, algorithm, data):
                 total_male += 1
 
     elif algorithm in ["adaboost", "svm", "xgboost"]:
-        matrix_data_list = construct_follower_comments_matrix_list(data, list_of_words[algorithm])
+        matrix_data_list = construct_follower_comments_matrix_list(data, TRAINED_CLASSIFIER_MODEL_LIST_OF_WORDS[algorithm])
         for follower_idx, matrix_data in enumerate(matrix_data_list):
             client_threads[client_id].send_status("false", "message", "Processing follower", " {}/{}".format(follower_idx, total_follower))
 
             try:
-                answer = main_classifier[algorithm](main_model[algorithm], matrix_data)
+                answer = CLASSIFIER_FUNC[algorithm](TRAINED_CLASSIFIER_MODELS[algorithm], matrix_data)
                 if (answer == 0).sum() > (answer == 1).sum():
                     total_male += 1
                 else:
@@ -306,23 +314,23 @@ def index():
 def main():
     print("Compute threshold is set to {}".format(args["FGC_COMPUTE_THRESHOLD"]))
 
-    global main_model
-    main_model["naive-bayes"] = load_classifier((os.path.join(args["FGC_DATA_DIR"], "model/naive_bayes_74405.p")))
-    main_model["svm"] = load_classifier(str(os.path.join(args["FGC_DATA_DIR"], "model/svm_74420.p")))
-    main_model["adaboost"] = load_classifier(str(os.path.join(args["FGC_DATA_DIR"], "model/ada_74420.p")))
-    main_model["xgboost"] = load_classifier(str(os.path.join(args["FGC_DATA_DIR"], "model/xg_74420.p")))
+    global TRAINED_CLASSIFIER_MODELS
+    TRAINED_CLASSIFIER_MODELS["naive-bayes"] = load_classifier((os.path.join(args["FGC_DATA_DIR"], "model/naive_bayes_74405.p")))
+    TRAINED_CLASSIFIER_MODELS["svm"] = load_classifier(str(os.path.join(args["FGC_DATA_DIR"], "model/svm_74420.p")))
+    TRAINED_CLASSIFIER_MODELS["adaboost"] = load_classifier(str(os.path.join(args["FGC_DATA_DIR"], "model/ada_74420.p")))
+    TRAINED_CLASSIFIER_MODELS["xgboost"] = load_classifier(str(os.path.join(args["FGC_DATA_DIR"], "model/xg_74420.p")))
 
     print("Reading list of words")
-    global list_of_words
-    list_of_words["svm"] = cache.load_pickle(str(os.path.join(args["FGC_DATA_DIR"], "model/svm_list_of_words_90670.p")))
-    list_of_words["adaboost"] = cache.load_pickle(str(os.path.join(args["FGC_DATA_DIR"], "model/adaboost_list_of_words_90670.p")))
-    list_of_words["xgboost"] = cache.load_pickle(str(os.path.join(args["FGC_DATA_DIR"], "model/xgboost_list_of_words_90670.p")))
+    global TRAINED_CLASSIFIER_MODEL_LIST_OF_WORDS
+    TRAINED_CLASSIFIER_MODEL_LIST_OF_WORDS["svm"] = cache.load_pickle(str(os.path.join(args["FGC_DATA_DIR"], "model/svm_list_of_words_90670.p")))
+    TRAINED_CLASSIFIER_MODEL_LIST_OF_WORDS["adaboost"] = cache.load_pickle(str(os.path.join(args["FGC_DATA_DIR"], "model/adaboost_list_of_words_90670.p")))
+    TRAINED_CLASSIFIER_MODEL_LIST_OF_WORDS["xgboost"] = cache.load_pickle(str(os.path.join(args["FGC_DATA_DIR"], "model/xgboost_list_of_words_90670.p")))
 
-    global main_classifier
-    main_classifier["naive-bayes"] = naive_bayes.nb_classify
-    main_classifier["svm"] = svm.svm_classify
-    main_classifier["adaboost"] = adab.ada_classify
-    main_classifier["xgboost"] = xgb.xg_classify
+    global CLASSIFIER_FUNC
+    CLASSIFIER_FUNC["naive-bayes"] = naive_bayes.nb_classify
+    CLASSIFIER_FUNC["svm"] = svm.svm_classify
+    CLASSIFIER_FUNC["adaboost"] = adab.ada_classify
+    CLASSIFIER_FUNC["xgboost"] = xgb.xg_classify
 
     global ig_client
     ig_username = args["FGC_IG_USERNAME"]
@@ -340,11 +348,11 @@ def main():
     print("Reading blacklist words file")
     load_blacklist_words(str(os.path.join(args["FGC_DATA_DIR"], "blacklist.txt")))
 
-    options = {"host": args["FGC_FLASK_HTTP_LISTEN_ADDR"], "port": args["FGC_FLASK_HTTP_LISTEN_PORT"]}
+    flask_opts = {"host": args["FGC_FLASK_HTTP_LISTEN_ADDR"], "port": args["FGC_FLASK_HTTP_LISTEN_PORT"]}
     if args["FGC_FLASK_SSL_CONTEXT"] != "":
-        options["ssl_context"] = args["FGC_FLASK_SSL_CONTEXT"]
+        flask_opts["ssl_context"] = args["FGC_FLASK_SSL_CONTEXT"]
 
-    app.run(**options)
+    app.run(**flask_opts)
 
 
 if __name__ == "__main__":

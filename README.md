@@ -7,7 +7,7 @@
   <strong>Know the gender of your followers!</strong>
 </div>
 <div align="center">
-	A quick <code>hack</code> to support my short text classification <a href="https://www.sciencedirect.com/science/article/pii/S1877050919310609?via%3Dihub">thesis</a>. This code is NOT polished nor maintained!
+	A quick <code>hack</code> to support my short text classification <a href="https://www.sciencedirect.com/science/article/pii/S1877050919310609?via%3Dihub">thesis</a>. This code serves as a quick demo and is NOT maintained!
 </div>
 
 <br />
