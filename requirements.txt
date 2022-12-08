@@ -1,6 +1,6 @@
 Flask-WTF==1.0.0
 asn1crypto==0.24.0
-certifi==2018.10.15
+certifi==2022.12.7
 cffi==1.12
 chardet==3.0.4
 Click==7.0
